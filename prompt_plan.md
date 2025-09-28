@@ -36,7 +36,7 @@
 7. Algorithm selector dropdown  
 8. Basic metrics overlay (avg wait/travel)  
 
-*Nice-to-have but Deferred*: unit tests, CI, Storybook, production build/deploy.
+*Nice-to-have but Deferred*: production build/deploy, extra features.
 
 ---
 

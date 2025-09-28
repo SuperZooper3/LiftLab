@@ -170,16 +170,12 @@ A **frontend-focused, full-stack-feel elevator simulator** designed as a learnin
 
 ### 7. **Future Extensions (Optional)**
 
-* Continuous simulation mode (passengers spawn indefinitely).
 * Custom passenger distributions (PDF-based).
 * Multiple buildings / scenario presets.
 * Richer visualization (e.g., elevator numbers, passenger colors).
 * Web-hosted version with sharable links.
+* Continuous simulation mode (passengers spawn indefinitely).
 
 ---
 
 This spec keeps the MVP **focused, developer-friendly, and extensible**, while allowing for smooth integration of more advanced features later.
-
----
-
-If you want, I can also **draw a visual diagram of the architecture** showing elevators, passengers, algorithm interface, and visualization layers. It can make it even easier for a developer to start coding. Do you want me to do that?
