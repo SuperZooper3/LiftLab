@@ -17,3 +17,6 @@ export * from './elevator.js';
 
 // Passenger spawning and management
 export * from './spawner.js';
+
+// Elevator algorithms
+export * from './algorithms.js';
