@@ -19,10 +19,11 @@ interface BuildingCanvasProps {
 }
 
 const FLOOR_HEIGHT = 50;
-const SHAFT_WIDTH = 100;
+const SHAFT_WIDTH = 120; // Increased spacing between shafts
 const ELEVATOR_WIDTH = 85;
 const ELEVATOR_HEIGHT = 40;
 const MARGIN = 40;
+const FLOOR_LABEL_WIDTH = 80; // Space for floor labels on the left
 
 export function BuildingCanvas({ 
   floors, 
@@ -48,8 +49,8 @@ export function BuildingCanvas({
   const scaledElevatorWidth = ELEVATOR_WIDTH;
   const scaledElevatorHeight = ELEVATOR_HEIGHT;
   
-  // Start building at margin offset
-  const offsetX = MARGIN;
+  // Start building at margin offset, with space for floor labels
+  const offsetX = MARGIN + FLOOR_LABEL_WIDTH;
   const offsetY = MARGIN;
 
   // Resize observer to track container dimensions
@@ -161,6 +162,25 @@ export function BuildingCanvas({
         ref={stageRef}
       >
         <Layer>
+          {/* Render shared floor labels on the left */}
+          {Array.from({ length: floors }).map((_, floorIndex) => {
+            const floorNumber = floors - floorIndex - 1; // Top floor = highest number
+            return (
+              <Text
+                key={`floor-label-${floorIndex}`}
+                x={MARGIN}
+                y={offsetY + floorIndex * scaledFloorHeight + scaledFloorHeight / 2 - 10}
+                text={`Floor ${floorNumber}`}
+                fontSize={16}
+                fill="#804d25" // cream-900
+                fontFamily="Arial, sans-serif"
+                fontStyle="bold"
+                align="left"
+                width={FLOOR_LABEL_WIDTH - 10}
+              />
+            );
+          })}
+
           {/* Render elevator shafts */}
           {Array.from({ length: elevators }).map((_, elevatorIndex) => {
             const shaftX = offsetX + elevatorIndex * scaledShaftWidth;
@@ -189,22 +209,6 @@ export function BuildingCanvas({
                     fill="#d68d3e" // cream-600
                   />
                 ))}
-                
-                {/* Floor numbers */}
-                {Array.from({ length: floors }).map((_, floorIndex) => {
-                  const floorNumber = floors - floorIndex - 1; // Top floor = highest number
-                  return (
-                    <Text
-                      key={`floor-label-${elevatorIndex}-${floorIndex}`}
-                      x={shaftX + 5}
-                      y={offsetY + floorIndex * scaledFloorHeight + scaledFloorHeight / 2 - 8}
-                      text={floorNumber.toString()}
-                      fontSize={14}
-                      fill="#804d25" // cream-900
-                      fontFamily="Arial"
-                    />
-                  );
-                })}
               </React.Fragment>
             );
           })}
