@@ -30,6 +30,9 @@ export function useSimulation() {
   const [elevatorStates, setElevatorStates] = useState<Elevator[]>([]);
   const [waitingPassengers, setWaitingPassengers] = useState<Passenger[]>([]);
   
+  // Use a ref to store passengers immediately for simulation logic
+  const waitingPassengersRef = useRef<Passenger[]>([]);
+  
   // Simulation objects
   const elevatorsRef = useRef<ElevatorCar[]>([]);
   const spawnerRef = useRef<PassengerSpawner | null>(null);
@@ -79,7 +82,6 @@ export function useSimulation() {
     
     // Update initial elevator states
     updateElevatorStates();
-    setWaitingPassengers([]);
     
     // Add some test passengers for debugging
     const testPassengers = [
@@ -104,9 +106,12 @@ export function useSimulation() {
     ];
     
     console.log('🧪 Adding test passengers:', testPassengers);
-    setWaitingPassengers(testPassengers);
     
-    console.log('✅ Simulation initialized');
+    // Store in both state and ref
+    setWaitingPassengers(testPassengers);
+    waitingPassengersRef.current = [...testPassengers];
+    
+    console.log('✅ Simulation initialized with passengers:', waitingPassengersRef.current.length);
   };
   
   // Update elevator states for the canvas
@@ -127,25 +132,30 @@ export function useSimulation() {
       return;
     }
     
+    // Use ref for current passengers to avoid React state timing issues
+    const currentPassengers = waitingPassengersRef.current;
+    
     // Spawn new passengers
     const waitingCounts = new Array(config.floors).fill(0);
-    waitingPassengers.forEach(p => waitingCounts[p.startFloor]++);
+    currentPassengers.forEach(p => waitingCounts[p.startFloor]++);
     
     const newPassengers = spawnerRef.current.nextTick(deltaTime, totalTime, waitingCounts);
     console.log('👥 Passenger spawning:', { 
       deltaTime,
       totalTime,
       newPassengers: newPassengers.length, 
-      currentWaiting: waitingPassengers.length,
+      currentWaiting: currentPassengers.length,
       waitingCounts,
       spawnRate: spawnerRef.current.config?.spawnRate
     });
     
-    const allWaiting = [...waitingPassengers, ...newPassengers];
+    let allWaiting = [...currentPassengers, ...newPassengers];
     
     if (newPassengers.length > 0) {
       console.log('🆕 New passengers:', newPassengers.map(p => `Floor ${p.startFloor} → ${p.destinationFloor}`));
     }
+    
+    console.log('🔄 Start of tick passengers:', allWaiting.map(p => `${p.id}(${p.startFloor}→${p.destinationFloor})`));
     
     // Step each elevator
     for (let i = 0; i < elevatorsRef.current.length; i++) {
@@ -181,22 +191,41 @@ export function useSimulation() {
       }
       
       // Handle passenger boarding
+      const elevatorState = elevator.getState();
+      const passengersOnFloor = allWaiting.filter(p => p.startFloor === elevatorState.currentFloor);
+      
+      if (passengersOnFloor.length > 0) {
+        console.log(`🏢 Elevator ${i + 1} on floor ${elevatorState.currentFloor}:`, {
+          doors: elevatorState.doorState,
+          passengersWaiting: passengersOnFloor.length,
+          elevatorCapacity: `${elevatorState.passengers.length}/${8}`
+        });
+      }
+      
       const boarded = elevator.boardPassengers(allWaiting, totalTime);
+      if (boarded.length > 0) {
+        console.log(`🚶‍♂️ Elevator ${i + 1} boarded passengers:`, boarded.map(p => `${p.id} (${p.startFloor}→${p.destinationFloor})`));
+      }
       
       // Handle passenger disembarking
       const disembarked = elevator.disembarkPassengers(totalTime);
+      if (disembarked.length > 0) {
+        console.log(`🚶‍♀️ Elevator ${i + 1} disembarked passengers:`, disembarked.map(p => `${p.id} (${p.startFloor}→${p.destinationFloor})`));
+      }
       completedPassengersRef.current.push(...disembarked);
       
       // Remove boarded passengers from waiting list
-      for (const passenger of boarded) {
-        const index = allWaiting.indexOf(passenger);
-        if (index >= 0) {
-          allWaiting.splice(index, 1);
-        }
+      if (boarded.length > 0) {
+        const boardedIds = new Set(boarded.map(p => p.id));
+        const beforeCount = allWaiting.length;
+        allWaiting = allWaiting.filter(p => !boardedIds.has(p.id));
+        console.log(`❌ Removed ${beforeCount - allWaiting.length} boarded passengers from waiting list`);
       }
     }
     
-    // Update state
+    // Update both state and ref
+    console.log(`📊 End of tick - waiting passengers: ${allWaiting.length}`, allWaiting.map(p => `${p.id}(${p.startFloor}→${p.destinationFloor})`));
+    waitingPassengersRef.current = allWaiting;
     setWaitingPassengers(allWaiting);
     updateElevatorStates();
     
@@ -280,6 +309,7 @@ export function useSimulation() {
     elevatorsRef.current = [];
     spawnerRef.current = null;
     completedPassengersRef.current = [];
+    waitingPassengersRef.current = [];
     setElevatorStates([]);
     setWaitingPassengers([]);
     resetMetrics();

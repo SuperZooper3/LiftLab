@@ -169,6 +169,10 @@ function App() {
                         <div className="text-sm text-sage-600">Total Passengers</div>
                         <div className="text-xl font-semibold text-sage-800">{metrics.totalPassengers}</div>
                       </div>
+                      <div>
+                        <div className="text-sm text-sage-600">Waiting Now</div>
+                        <div className="text-xl font-semibold text-sage-800">{waitingPassengers.length}</div>
+                      </div>
                     </div>
           </div>
         </aside>
