@@ -1,5 +1,6 @@
 import { useAppStore } from './store';
 import { BuildingCanvas } from './components/BuildingCanvas';
+import { useSimulation } from './hooks/useSimulation';
 
 function App() {
   const { 
@@ -9,8 +10,12 @@ function App() {
     speed,
     setConfig, 
     setStatus, 
-    setSpeed 
+    setSpeed,
+    metrics
   } = useAppStore();
+  
+  // Connect simulation engine
+  const { elevatorStates, waitingPassengers } = useSimulation();
 
   return (
     <div className="min-h-screen bg-cream-50">
@@ -143,20 +148,28 @@ function App() {
           {/* Metrics Panel */}
           <div className="metrics-overlay">
             <h2 className="text-lg font-semibold mb-4 text-sage-800">Metrics</h2>
-            <div className="space-y-3">
-              <div>
-                <div className="text-sm text-sage-600">Avg Wait Time</div>
-                <div className="text-xl font-semibold text-sage-800">--</div>
-              </div>
-              <div>
-                <div className="text-sm text-sage-600">Avg Travel Time</div>
-                <div className="text-xl font-semibold text-sage-800">--</div>
-              </div>
-              <div>
-                <div className="text-sm text-sage-600">Passengers Served</div>
-                <div className="text-xl font-semibold text-sage-800">0</div>
-              </div>
-            </div>
+                    <div className="space-y-3">
+                      <div>
+                        <div className="text-sm text-sage-600">Avg Wait Time</div>
+                        <div className="text-xl font-semibold text-sage-800">
+                          {metrics.avgWaitTime > 0 ? `${metrics.avgWaitTime.toFixed(1)}s` : '--'}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-sm text-sage-600">Avg Travel Time</div>
+                        <div className="text-xl font-semibold text-sage-800">
+                          {metrics.avgTravelTime > 0 ? `${metrics.avgTravelTime.toFixed(1)}s` : '--'}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-sm text-sage-600">Passengers Served</div>
+                        <div className="text-xl font-semibold text-sage-800">{metrics.passengersServed}</div>
+                      </div>
+                      <div>
+                        <div className="text-sm text-sage-600">Total Passengers</div>
+                        <div className="text-xl font-semibold text-sage-800">{metrics.totalPassengers}</div>
+                      </div>
+                    </div>
           </div>
         </aside>
 
@@ -170,11 +183,12 @@ function App() {
                   {config.floors} Floors • {config.elevators} Elevators
                 </span>
               </div>
-              <div className="h-[calc(100%-3rem)] relative">
-                <BuildingCanvas 
-                  floors={config.floors} 
-                  elevators={config.elevators}
-                />
+                      <div className="h-[calc(100%-3rem)] relative">
+                        <BuildingCanvas 
+                          floors={config.floors} 
+                          elevators={config.elevators}
+                          elevatorStates={elevatorStates}
+                        />
                 <div className="absolute bottom-2 right-2 text-xs text-sage-500 bg-cream-100/80 px-2 py-1 rounded">
                   Scroll to zoom • Drag to pan
                 </div>
