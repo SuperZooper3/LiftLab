@@ -1,21 +1,23 @@
 import { useAppStore } from './store';
 import { BuildingCanvas } from './components/BuildingCanvas';
-import { useSimulation } from './hooks/useSimulation';
+import { useSimulationEngine } from './hooks/useSimulationEngine';
+import { SimulationStatus } from '@lift-lab/sim';
 
 function App() {
   const { 
     config, 
-    status, 
     selectedAlgorithm, 
     speed,
     setConfig, 
-    setStatus, 
-    setSpeed,
-    metrics
+    setSpeed
   } = useAppStore();
   
-  // Connect simulation engine
-  const { elevatorStates, waitingPassengers } = useSimulation();
+  // Use the clean simulation engine
+  const simulation = useSimulationEngine({
+    floors: config.floors,
+    elevators: config.elevators,
+    spawnRate: 30.0 // High rate for testing
+  });
 
   return (
     <div className="min-h-screen bg-cream-50">
@@ -27,9 +29,9 @@ function App() {
               <h1 className="text-2xl font-bold text-sage-800">LiftLab</h1>
               <span className="text-2xl">🎢</span>
             </div>
-            <div className="text-sm text-sage-600">
-              Status: <span className="font-medium capitalize text-sage-700">{status}</span>
-            </div>
+                    <div className="text-sm text-sage-600">
+                      Status: <span className="font-medium capitalize text-sage-700">{simulation.status}</span>
+                    </div>
           </div>
         </div>
       </header>
@@ -58,7 +60,7 @@ function App() {
                       setConfig({ floors: value });
                     }
                   }}
-                  disabled={status === 'running'}
+                  disabled={simulation.status === SimulationStatus.RUNNING}
                   className="w-full px-3 py-2 border border-cream-300 rounded-md text-sage-800 bg-white focus:outline-none focus:ring-2 focus:ring-sage-400 disabled:bg-cream-100 disabled:opacity-50"
                 />
               </div>
@@ -78,7 +80,7 @@ function App() {
                       setConfig({ elevators: value });
                     }
                   }}
-                  disabled={status === 'running'}
+                  disabled={simulation.status === SimulationStatus.RUNNING}
                   className="w-full px-3 py-2 border border-cream-300 rounded-md text-sage-800 bg-white focus:outline-none focus:ring-2 focus:ring-sage-400 disabled:bg-cream-100 disabled:opacity-50"
                 />
               </div>
@@ -89,7 +91,7 @@ function App() {
                 </label>
                 <select
                   value={selectedAlgorithm}
-                  disabled={status === 'running'}
+                  disabled={simulation.status === SimulationStatus.RUNNING}
                   className="w-full px-3 py-2 border border-cream-300 rounded-md text-sage-800 bg-white focus:outline-none focus:ring-2 focus:ring-sage-400 disabled:bg-cream-100 disabled:opacity-50"
                 >
                   <option value="greedy">Greedy</option>
@@ -102,21 +104,21 @@ function App() {
               <div className="space-y-3">
                 <button 
                   onClick={() => {
-                    if (status === 'idle') {
-                      setStatus('running');
-                    } else if (status === 'running') {
-                      setStatus('paused');
-                    } else if (status === 'paused') {
-                      setStatus('running');
+                    if (simulation.status === SimulationStatus.IDLE) {
+                      simulation.start();
+                    } else if (simulation.status === SimulationStatus.RUNNING) {
+                      simulation.pause();
+                    } else if (simulation.status === SimulationStatus.PAUSED) {
+                      simulation.resume();
                     }
                   }}
                   className="w-full px-4 py-2 bg-sage-500 text-white rounded-md hover:bg-sage-600 disabled:opacity-50 transition-colors"
                 >
-                  {status === 'idle' ? 'Start Simulation' : 
-                   status === 'running' ? 'Pause' : 'Resume'}
+                  {simulation.status === SimulationStatus.IDLE ? 'Start Simulation' : 
+                   simulation.status === SimulationStatus.RUNNING ? 'Pause' : 'Resume'}
                 </button>
                 <button 
-                  onClick={() => setStatus('idle')}
+                  onClick={() => simulation.reset()}
                   className="w-full px-4 py-2 bg-lavender-500 text-white rounded-md hover:bg-lavender-600 transition-colors"
                 >
                   Reset
@@ -133,7 +135,11 @@ function App() {
                   max="4"
                   step="0.25"
                   value={speed}
-                  onChange={(e) => setSpeed(parseFloat(e.target.value))}
+                  onChange={(e) => {
+                    const newSpeed = parseFloat(e.target.value);
+                    setSpeed(newSpeed);
+                    simulation.setSpeed(newSpeed);
+                  }}
                   className="w-full h-2 bg-cream-200 rounded-lg appearance-none cursor-pointer slider"
                 />
                 <div className="flex justify-between text-xs text-sage-500 mt-1">
@@ -152,26 +158,26 @@ function App() {
                       <div>
                         <div className="text-sm text-sage-600">Avg Wait Time</div>
                         <div className="text-xl font-semibold text-sage-800">
-                          {metrics.avgWaitTime > 0 ? `${metrics.avgWaitTime.toFixed(1)}s` : '--'}
+                          {simulation.metrics.avgWaitTime > 0 ? `${simulation.metrics.avgWaitTime.toFixed(1)}s` : '--'}
                         </div>
                       </div>
                       <div>
                         <div className="text-sm text-sage-600">Avg Travel Time</div>
                         <div className="text-xl font-semibold text-sage-800">
-                          {metrics.avgTravelTime > 0 ? `${metrics.avgTravelTime.toFixed(1)}s` : '--'}
+                          {simulation.metrics.avgTravelTime > 0 ? `${simulation.metrics.avgTravelTime.toFixed(1)}s` : '--'}
                         </div>
                       </div>
                       <div>
                         <div className="text-sm text-sage-600">Passengers Served</div>
-                        <div className="text-xl font-semibold text-sage-800">{metrics.passengersServed}</div>
+                        <div className="text-xl font-semibold text-sage-800">{simulation.metrics.passengersServed}</div>
                       </div>
                       <div>
                         <div className="text-sm text-sage-600">Total Passengers</div>
-                        <div className="text-xl font-semibold text-sage-800">{metrics.totalPassengers}</div>
+                        <div className="text-xl font-semibold text-sage-800">{simulation.metrics.totalPassengers}</div>
                       </div>
                       <div>
                         <div className="text-sm text-sage-600">Waiting Now</div>
-                        <div className="text-xl font-semibold text-sage-800">{waitingPassengers.length}</div>
+                        <div className="text-xl font-semibold text-sage-800">{simulation.waitingPassengers.length}</div>
                       </div>
                     </div>
           </div>
@@ -191,8 +197,8 @@ function App() {
                         <BuildingCanvas 
                           floors={config.floors} 
                           elevators={config.elevators}
-                          elevatorStates={elevatorStates}
-                          waitingPassengers={waitingPassengers}
+                          elevatorStates={simulation.elevators}
+                          waitingPassengers={simulation.waitingPassengers}
                         />
                 <div className="absolute bottom-2 right-2 text-xs text-sage-500 bg-cream-100/80 px-2 py-1 rounded">
                   Scroll to zoom • Drag to pan
