@@ -122,7 +122,12 @@ export function useSimulation() {
   
   // Main simulation step
   const simulationStep = (deltaTime: number, totalTime: number) => {
-    console.log('🔄 Simulation step:', { deltaTime, totalTime, elevatorCount: elevatorsRef.current.length });
+    console.log('🔄 Simulation step:', { 
+      deltaTime, 
+      totalTime, 
+      elevatorCount: elevatorsRef.current.length,
+      passengersInRef: waitingPassengersRef.current.length 
+    });
     
     if (!spawnerRef.current || elevatorsRef.current.length === 0) {
       console.warn('⚠️ Missing spawner or elevators:', { 
@@ -134,6 +139,7 @@ export function useSimulation() {
     
     // Use ref for current passengers to avoid React state timing issues
     const currentPassengers = waitingPassengersRef.current;
+    console.log('🔍 Current passengers from ref:', currentPassengers.map(p => `${p.id}(${p.startFloor}→${p.destinationFloor})`));
     
     // Spawn new passengers
     const waitingCounts = new Array(config.floors).fill(0);
@@ -180,7 +186,25 @@ export function useSimulation() {
       const elevatorStates = elevatorsRef.current.map(e => e.getState());
       const commands = algorithmRef.current.onTick(elevatorStates, allWaiting, totalTime);
       
-      console.log(`🤖 Algorithm commands for E${i + 1}:`, commands.filter(c => c.elevatorId === elevator.getState().id));
+      // Log algorithm input and output
+      if (i === 0) { // Only log once per tick, not per elevator
+        console.log('🧠 Algorithm Input:', {
+          elevators: elevatorStates.map(e => ({
+            id: e.id,
+            floor: e.currentFloor,
+            direction: e.direction,
+            doors: e.doorState,
+            passengers: e.passengers.length
+          })),
+          waitingPassengers: allWaiting.map(p => `${p.id}(${p.startFloor}→${p.destinationFloor})`)
+        });
+        console.log('🤖 Algorithm Output:', commands.map(c => `${c.elevatorId}: ${c.action}`));
+      }
+      
+      const elevatorCommands = commands.filter(c => c.elevatorId === elevator.getState().id);
+      if (elevatorCommands.length > 0) {
+        console.log(`🎯 Commands for E${i + 1}:`, elevatorCommands.map(c => c.action));
+      }
       
       // Execute commands
       for (const command of commands) {
@@ -272,6 +296,7 @@ export function useSimulation() {
   // Start simulation
   const startSimulation = () => {
     console.log('▶️ Starting simulation...');
+    console.log('🔍 Passengers in ref before starting:', waitingPassengersRef.current.length);
     
     if (!tickerRef.current) {
       const baseTickRate = 10; // 10 TPS base rate
@@ -320,9 +345,13 @@ export function useSimulation() {
     switch (status) {
       case 'running':
         if (elevatorsRef.current.length === 0) {
-          // First time starting - initialize
+          // First time starting - initialize then start
           initializeSimulation();
-          startSimulation();
+          // Add a small delay to ensure initialization completes
+          setTimeout(() => {
+            console.log('🔍 Passengers in ref after init delay:', waitingPassengersRef.current.length);
+            startSimulation();
+          }, 10);
         } else {
           // Resuming
           resumeSimulation();
