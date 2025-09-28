@@ -12,7 +12,9 @@
     "build": "npm run build --workspace=@lift-lab/sim && npm run build --workspace=@lift-lab/web",
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
     "format": "prettier --write .",
-    "type-check": "npm run type-check --workspace=@lift-lab/sim && npm run type-check --workspace=@lift-lab/web"
+    "type-check": "npm run type-check --workspace=@lift-lab/sim && npm run type-check --workspace=@lift-lab/web",
+    "test-sim": "npm run test-sim --workspace=@lift-lab/sim",
+    "simulate": "npm run simulate --workspace=@lift-lab/sim"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^6.0.0",

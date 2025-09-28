@@ -144,8 +144,8 @@ class PrecisionTicker implements Ticker {
     if (!this.isActive || this.isPausedState) return;
 
     // Use requestAnimationFrame in browser, setTimeout in Node.js
-    if (typeof requestAnimationFrame !== 'undefined') {
-      this.animationFrameId = requestAnimationFrame(() => this.tick());
+    if (typeof globalThis !== 'undefined' && 'requestAnimationFrame' in globalThis) {
+      this.animationFrameId = (globalThis as any).requestAnimationFrame(() => this.tick());
     } else {
       this.timeoutId = setTimeout(() => this.tick(), this.intervalMs);
     }
@@ -153,7 +153,9 @@ class PrecisionTicker implements Ticker {
 
   private cancelScheduledTick(): void {
     if (this.animationFrameId !== null) {
-      cancelAnimationFrame(this.animationFrameId);
+      if (typeof globalThis !== 'undefined' && 'cancelAnimationFrame' in globalThis) {
+        (globalThis as any).cancelAnimationFrame(this.animationFrameId);
+      }
       this.animationFrameId = null;
     }
     

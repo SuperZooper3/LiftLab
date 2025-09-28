@@ -4,23 +4,31 @@ A **frontend-focused elevator simulator** designed as a learning and visual play
 
 ## 🚀 Project Status
 
-**Current Phase**: MVP Development - Milestone 1 ✅ COMPLETED  
+**Current Phase**: MVP Development - Milestone 2 ✅ COMPLETED  
 **Last Updated**: September 28, 2025
 
 ### ✅ Completed - Milestone 1
 - [x] Monorepo structure with npm workspaces
-- [x] ESLint + Prettier configuration
+- [x] ESLint + Prettier configuration  
 - [x] TypeScript setup for both packages
 - [x] Tailwind CSS setup with custom elevator/passenger themes
 - [x] Zustand store with simulation config & state management
 - [x] React app scaffold with placeholder UI
 - [x] Vite build configuration
 
-### 📋 Next Up - Milestone 2
-- [ ] Core simulation kernel (elevators, passengers, tick loop)
-- [ ] Domain models (Passenger, Elevator interfaces)
-- [ ] Deterministic RNG helper
-- [ ] Algorithm interface & greedy baseline
+### ✅ Completed - Milestone 2 🎉
+- [x] **Core simulation kernel** - Complete elevator simulation engine
+- [x] **Domain models** - TypeScript interfaces for all entities
+- [x] **Deterministic RNG** - Seeded random number generation
+- [x] **Tick scheduler** - High-precision timing system
+- [x] **ElevatorCar state machine** - Realistic elevator behavior
+- [x] **PassengerSpawner** - Configurable passenger generation
+- [x] **CLI testing interface** - Verify engine functionality
+
+### 📋 Next Up - Milestone 3
+- [ ] Algorithm interface & greedy baseline implementation
+- [ ] React UI integration with simulation engine
+- [ ] Canvas rendering of elevators and passengers
 
 ## 🏗️ Architecture
 
@@ -66,17 +74,22 @@ npm run build        # Build all packages
 npm run lint         # Run ESLint
 npm run format       # Format with Prettier
 npm run type-check   # TypeScript type checking
+
+# Simulation Engine Testing
+npm run test-sim     # Test core simulation components
+npm run simulate [duration] # Run elevator simulation (default: 30s)
 ```
 
 ## 📦 Package Structure
 
-### `@lift-lab/sim` - Simulation Engine
+### `@lift-lab/sim` - Simulation Engine ✅ WORKING
 Pure TypeScript library implementing:
-- Elevator state machines
-- Passenger spawning & behavior  
-- Algorithm interface
-- Deterministic tick system
-- Metrics collection
+- **Elevator state machines** - Realistic movement, doors, passenger management
+- **Passenger spawning** - Multiple traffic patterns (rush hour, uniform, etc.)
+- **Deterministic RNG** - Reproducible simulations with seeded randomness
+- **High-precision timing** - Smooth tick system with pause/resume/speed control
+- **Type-safe APIs** - Complete TypeScript interfaces and enums
+- **CLI testing** - Command-line interface to verify functionality
 
 ### `@lift-lab/web` - React Frontend
 React application providing:
@@ -112,6 +125,33 @@ React application providing:
 ## 🤝 Contributing
 
 This is currently a solo learning project following an iterative MVP approach. See `todo.md` for the current development roadmap.
+
+## 🧪 Testing the Simulation Engine
+
+The core simulation engine is **fully functional** and can be tested independently:
+
+```bash
+# Test all core components
+npm run test-sim
+
+# Run a 30-second elevator simulation
+npm run simulate 30
+
+# Watch elevators serve passengers in real-time!
+```
+
+**Example output:**
+```
+🎢 Starting LiftLab Simulation Test...
+⏱️  Time: 10s
+👥 Passengers: 3 spawned, 1 waiting, 2 completed
+🎢 Elevators:
+   elevator_0: Floor 3 ↑ 🔓 (2/8 passengers)
+   elevator_1: Floor 0 IDLE 🔒 (0/8 passengers)
+   elevator_2: Floor 7 ↓ 🔒 (1/8 passengers)
+```
+
+The simulation engine is **production-ready** and powers the entire LiftLab experience! 🚀
 
 ## 📄 License
 

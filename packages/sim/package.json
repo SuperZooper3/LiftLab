@@ -8,10 +8,14 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "cli": "node dist/cli.js",
+    "test-sim": "npm run build && npm run cli test",
+    "simulate": "npm run build && npm run cli simulate"
   },
   "devDependencies": {
-    "typescript": "^5.0.0"
+    "typescript": "^5.0.0",
+    "@types/node": "^20.0.0"
   },
   "files": [
     "dist"
