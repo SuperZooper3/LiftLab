@@ -1,13 +1,29 @@
 {
   "name": "@lift-lab/web",
   "version": "1.0.0",
-  "description": "LiftLab web interface",
+  "description": "Interactive web interface for LiftLab elevator simulation platform",
   "type": "module",
+  "author": "LiftLab Contributors",
+  "license": "MIT",
+  "keywords": [
+    "elevator",
+    "simulation",
+    "react",
+    "visualization",
+    "konva",
+    "typescript"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SuperZooper3/LiftLab.git",
+    "directory": "packages/web"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist"
   },
   "dependencies": {
     "@lift-lab/sim": "file:../sim",

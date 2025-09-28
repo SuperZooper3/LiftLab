@@ -1,17 +1,42 @@
 /**
- * useSimulationEngine - Clean React integration with SimulationEngine
- * Simple wrapper that provides React state updates when engine state changes
+ * React Hook for Simulation Engine Integration
+ * 
+ * Provides a clean React interface to the SimulationEngine class with:
+ * - Automatic state synchronization between engine and React
+ * - Proper lifecycle management (initialization and cleanup)
+ * - Live configuration updates
+ * - Simple control interface for UI components
+ * 
+ * @example
+ * ```tsx
+ * function SimulationComponent() {
+ *   const simulation = useSimulationEngine({
+ *     floors: 10,
+ *     elevators: 3,
+ *     spawnRate: 5.0
+ *   });
+ * 
+ *   return (
+ *     <div>
+ *       <button onClick={simulation.start}>Start</button>
+ *       <div>Status: {simulation.status}</div>
+ *     </div>
+ *   );
+ * }
+ * ```
  */
 
 import { useRef, useState, useEffect } from 'react';
 import { SimulationEngine, SimulationConfig, SimulationState } from '../engine/SimulationEngine';
 import { SimulationStatus } from '@lift-lab/sim';
 
+/**
+ * Hook for integrating SimulationEngine with React components
+ * @param config - Simulation configuration parameters
+ * @returns Simulation state and control interface
+ */
 export function useSimulationEngine(config: SimulationConfig) {
-  console.log('🏗️ useSimulationEngine hook called with config:', config);
   const engineRef = useRef<SimulationEngine | null>(null);
-  const isInitialized = useRef(false);
-  const configRef = useRef<SimulationConfig>(config);
   const [state, setState] = useState<SimulationState>({
     status: SimulationStatus.IDLE,
     elevators: [],
@@ -24,47 +49,24 @@ export function useSimulationEngine(config: SimulationConfig) {
     }
   });
 
-  // Initialize engine only once
+  // Initialize engine once
   useEffect(() => {
     if (!engineRef.current) {
-      console.log('🚀 Initializing new SimulationEngine with initial config:', configRef.current);
-      engineRef.current = new SimulationEngine(configRef.current);
-      
-      // Set up state change callback
+      engineRef.current = new SimulationEngine(config);
       engineRef.current.onStateChange = () => {
         if (engineRef.current) {
           setState(engineRef.current.getState());
         }
       };
-
-      // Initial state
       setState(engineRef.current.getState());
-      
-      // Mark as initialized
-      isInitialized.current = true;
     }
+    return () => engineRef.current?.reset();
+  }, []);
 
-    // Cleanup on unmount
-    return () => {
-      engineRef.current?.reset();
-    };
-  }, []); // Only run once on mount
-
-  // Update config when it changes (but not during initial setup)
+  // Update config when it changes
   useEffect(() => {
-    // Always update the config ref
-    configRef.current = config;
-    
-    if (engineRef.current && isInitialized.current) {
-      console.log('🔄 Config change detected in hook (post-initialization):', {
-        floors: config.floors,
-        elevators: config.elevators,
-        spawnRate: config.spawnRate,
-        engineStatus: engineRef.current.getState().status
-      });
-      
+    if (engineRef.current) {
       engineRef.current.updateConfig(config);
-      // Let the onStateChange callback handle state updates
     }
   }, [config]);
 

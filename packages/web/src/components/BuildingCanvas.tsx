@@ -1,44 +1,69 @@
 /**
- * BuildingCanvas - Konva-based elevator visualization
+ * BuildingCanvas - Interactive elevator building visualization
+ * 
+ * Renders a real-time view of the elevator building using Konva/Canvas with:
+ * - Animated elevator movement with smooth transitions
+ * - Passenger visualization with destination indicators
+ * - Interactive pan and zoom controls
+ * - Responsive design that adapts to container size
+ * - Pastel color scheme for visual appeal
+ * 
+ * @example
+ * ```tsx
+ * <BuildingCanvas
+ *   floors={10}
+ *   elevators={3}
+ *   elevatorStates={simulation.elevators}
+ *   waitingPassengers={simulation.waitingPassengers}
+ * />
+ * ```
  */
 
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { Stage, Layer, Rect, Text, Group } from 'react-konva';
 import Konva from 'konva';
-import { Elevator, Passenger } from '@lift-lab/sim';
+import { Elevator, Passenger, Direction } from '@lift-lab/sim';
 
+/**
+ * Props for the BuildingCanvas component
+ */
 interface BuildingCanvasProps {
-  /** Number of floors in the building */
+  /** Number of floors in the building (3-60) */
   floors: number;
-  
-  /** Number of elevators */
+  /** Number of elevators (1-8) */
   elevators: number;
-  
-  /** Current elevator states (optional for animation) */
+  /** Current elevator states for real-time animation */
   elevatorStates?: Elevator[];
-  
-  /** Waiting passengers on each floor */
+  /** Passengers currently waiting for pickup */
   waitingPassengers?: Passenger[];
 }
 
-const FLOOR_HEIGHT = 60; // Increased for better spacing
-const SHAFT_WIDTH = 120; // Spacing between shafts
-const ELEVATOR_WIDTH = 100; // Bigger elevator cars
-const ELEVATOR_HEIGHT = 50; // Bigger elevator cars
-const MARGIN = 40;
-const FLOOR_LABEL_WIDTH = 80; // Space for floor labels on the left
-const PASSENGER_AREA_WIDTH = 100; // Space to the right of shafts for passengers
+// Visual constants for consistent layout
+const FLOOR_HEIGHT = 60;           // Height of each floor in pixels
+const SHAFT_WIDTH = 120;           // Width of each elevator shaft
+const ELEVATOR_WIDTH = 100;        // Width of elevator cars
+const ELEVATOR_HEIGHT = 50;        // Height of elevator cars
+const MARGIN = 40;                 // Margin around the building
+const FLOOR_LABEL_WIDTH = 80;      // Space reserved for floor labels
+const PASSENGER_AREA_WIDTH = 100;  // Space for passenger display
 
-// Pastel colors for elevators (cycles after 5)
+/**
+ * Pastel color palette for elevator cars
+ * Colors cycle after 5 elevators for visual distinction
+ */
 const ELEVATOR_COLORS = [
   '#FFB3BA', // Light pink
   '#BAFFC9', // Light green  
   '#BAE1FF', // Light blue
   '#FFFFBA', // Light yellow
   '#FFDFBA', // Light peach
-];
+] as const;
 
-// Function to get elevator color
+/**
+ * Get the color for an elevator based on its index
+ * @param elevatorIndex - Zero-based elevator index
+ * @returns Hex color string
+ */
 const getElevatorColor = (elevatorIndex: number): string => {
   return ELEVATOR_COLORS[elevatorIndex % ELEVATOR_COLORS.length];
 };
@@ -222,29 +247,13 @@ export function BuildingCanvas({
                     
                     const elevatorX = shaftX + (scaledShaftWidth - scaledElevatorWidth) / 2;
                     
-                    // Generate more detailed state text
-                    let stateText = '';
-                    if (isDoorsOpen) {
-                      if (passengers.length > 0) {
-                        stateText = 'Unloading';
-                      } else {
-                        stateText = 'Loading';
-                      }
-                    } else if (direction === 'up') {
-                      stateText = 'Going Up';
-                    } else if (direction === 'down') {
-                      stateText = 'Going Down';
-                    } else {
-                      // Check if there are passengers waiting on this floor
-                      const waitingOnFloor = waitingPassengers?.filter(p => p.startFloor === currentFloor).length || 0;
-                      if (waitingOnFloor > 0 && passengers.length < 8) {
-                        stateText = 'Opening...';
-                      } else if (passengers.length > 0) {
-                        stateText = 'Planning';
-                      } else {
-                        stateText = 'Idle';
-                      }
-                    }
+                    // Generate elevator state text
+                    const stateText = isDoorsOpen 
+                      ? (passengers.length > 0 ? 'Unloading' : 'Loading')
+                      : direction === 'up' ? 'Going Up'
+                      : direction === 'down' ? 'Going Down'
+                      : passengers.length > 0 ? 'Planning'
+                      : 'Idle';
                     
                     return (
                       <Group

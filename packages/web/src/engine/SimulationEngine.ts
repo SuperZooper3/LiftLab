@@ -1,6 +1,23 @@
 /**
- * SimulationEngine - Clean, centralized simulation management
- * Single source of truth for all simulation state and logic
+ * SimulationEngine - Centralized elevator simulation management
+ * 
+ * This class serves as the main orchestrator for the elevator simulation,
+ * managing elevators, passengers, algorithms, and timing. It provides a
+ * clean interface for React integration while maintaining deterministic
+ * simulation behavior.
+ * 
+ * @example
+ * ```typescript
+ * const engine = new SimulationEngine({
+ *   floors: 10,
+ *   elevators: 3,
+ *   spawnRate: 5.0,
+ *   seed: 12345
+ * });
+ * 
+ * engine.onStateChange = () => updateUI(engine.getState());
+ * engine.start();
+ * ```
  */
 
 import { 
@@ -15,17 +32,31 @@ import {
   SimulationStatus
 } from '@lift-lab/sim';
 
+/**
+ * Configuration parameters for the simulation
+ */
 export interface SimulationConfig {
+  /** Number of floors in the building (3-60) */
   floors: number;
+  /** Number of elevators (1-8) */
   elevators: number;
+  /** Passenger spawn rate (passengers per minute) */
   spawnRate: number;
-  seed: number;
+  /** Random seed for deterministic behavior */
+  seed?: number;
 }
 
+/**
+ * Complete simulation state snapshot
+ */
 export interface SimulationState {
+  /** Current simulation status */
   status: SimulationStatus;
+  /** Current state of all elevators */
   elevators: Elevator[];
+  /** Passengers currently waiting for pickup */
   waitingPassengers: Passenger[];
+  /** Performance metrics */
   metrics: {
     avgWaitTime: number;
     avgTravelTime: number;
@@ -34,6 +65,16 @@ export interface SimulationState {
   };
 }
 
+/**
+ * Main simulation engine class
+ * 
+ * Manages the complete elevator simulation lifecycle including:
+ * - Elevator state machines
+ * - Passenger spawning and management
+ * - Algorithm execution
+ * - Performance metrics calculation
+ * - Real-time state updates
+ */
 export class SimulationEngine {
   private config: SimulationConfig;
   private elevators: ElevatorCar[] = [];
@@ -44,15 +85,23 @@ export class SimulationEngine {
   private ticker: ReturnType<typeof createTicker> | null = null;
   private status: SimulationStatus = SimulationStatus.IDLE;
   
-  // Callback for state changes
+  /** Callback invoked when simulation state changes */
   public onStateChange: (() => void) | null = null;
 
+  /**
+   * Create a new simulation engine
+   * @param config - Simulation configuration parameters
+   */
   constructor(config: SimulationConfig) {
-    this.config = config;
+    this.config = {
+      ...config,
+      seed: config.seed ?? Date.now() // Default to current time if no seed provided
+    };
   }
 
   /**
-   * Start or resume the simulation
+   * Start the simulation from idle state or resume from paused state
+   * Initializes all components if starting fresh
    */
   start(): void {
     if (this.status === SimulationStatus.IDLE) {
@@ -65,7 +114,8 @@ export class SimulationEngine {
   }
 
   /**
-   * Pause the simulation
+   * Pause the simulation while preserving current state
+   * Can be resumed later with start() or resume()
    */
   pause(): void {
     this.status = SimulationStatus.PAUSED;
@@ -74,7 +124,8 @@ export class SimulationEngine {
   }
 
   /**
-   * Resume the simulation
+   * Resume a paused simulation
+   * Equivalent to calling start() when paused
    */
   resume(): void {
     this.status = SimulationStatus.RUNNING;
@@ -83,7 +134,8 @@ export class SimulationEngine {
   }
 
   /**
-   * Reset the simulation
+   * Reset the simulation to initial state
+   * Clears all passengers, resets elevators, and stops the ticker
    */
   reset(): void {
     this.status = SimulationStatus.IDLE;
@@ -97,7 +149,9 @@ export class SimulationEngine {
   }
 
   /**
-   * Update configuration
+   * Update simulation configuration
+   * Some changes (floors, elevators) require reset, others can be applied live
+   * @param newConfig - Partial configuration to merge with current config
    */
   updateConfig(newConfig: Partial<SimulationConfig>): void {
     const oldConfig = { ...this.config };
@@ -121,7 +175,8 @@ export class SimulationEngine {
   }
 
   /**
-   * Set simulation speed
+   * Adjust simulation speed multiplier
+   * @param multiplier - Speed multiplier (0.25x to 4x)
    */
   setSpeed(multiplier: number): void {
     const baseTickRate = 10;
@@ -139,7 +194,8 @@ export class SimulationEngine {
   }
 
   /**
-   * Get current simulation state
+   * Get complete current simulation state
+   * @returns Immutable snapshot of current simulation state
    */
   getState(): SimulationState {
     return {
@@ -171,7 +227,7 @@ export class SimulationEngine {
     }
 
     // Create passenger spawner
-    const rng = createSeededRNG(this.config.seed);
+    const rng = createSeededRNG(this.config.seed ?? Date.now());
     this.spawner = new PassengerSpawner({
       floorCount: this.config.floors,
       spawnRate: this.config.spawnRate,
@@ -190,34 +246,6 @@ export class SimulationEngine {
     // Don't add test passengers - let the spawner handle all passenger generation
   }
 
-  /**
-   * Add test passengers for debugging
-   */
-  private addTestPassengers(): void {
-    const testPassengers = [
-      {
-        id: 'test-1',
-        startFloor: 0,
-        destinationFloor: 5,
-        requestTime: 0,
-      },
-      {
-        id: 'test-2',
-        startFloor: 2,
-        destinationFloor: 8,
-        requestTime: 0,
-      },
-      {
-        id: 'test-3',
-        startFloor: 1,
-        destinationFloor: 3,
-        requestTime: 0,
-      }
-    ];
-    
-    this.waitingPassengers = [...testPassengers];
-    console.log('🧪 Added test passengers:', testPassengers.length);
-  }
 
   /**
    * Single simulation step
@@ -278,42 +306,43 @@ export class SimulationEngine {
   }
 
   /**
-   * Calculate current metrics
+   * Calculate performance metrics
    */
   private calculateMetrics() {
     const completed = this.completedPassengers;
-    const total = completed.length + this.waitingPassengers.length;
+    const totalPassengers = completed.length + this.waitingPassengers.length + 
+      this.elevators.reduce((sum, e) => sum + e.getState().passengers.length, 0);
     
     if (completed.length === 0) {
       return {
         avgWaitTime: 0,
         avgTravelTime: 0,
         passengersServed: 0,
-        totalPassengers: total,
+        totalPassengers,
       };
     }
 
-    const waitTimes = completed
-      .filter(p => p.pickupTime !== undefined)
-      .map(p => p.pickupTime! - p.requestTime);
-    
-    const travelTimes = completed
-      .filter(p => p.dropoffTime !== undefined && p.pickupTime !== undefined)
-      .map(p => p.dropoffTime! - p.pickupTime!);
-    
-    const avgWait = waitTimes.length > 0 
-      ? waitTimes.reduce((a, b) => a + b, 0) / waitTimes.length 
-      : 0;
-    
-    const avgTravel = travelTimes.length > 0
-      ? travelTimes.reduce((a, b) => a + b, 0) / travelTimes.length
-      : 0;
+    let totalWaitTime = 0;
+    let totalTravelTime = 0;
+    let waitCount = 0;
+    let travelCount = 0;
+
+    for (const passenger of completed) {
+      if (passenger.pickupTime !== undefined) {
+        totalWaitTime += passenger.pickupTime - passenger.requestTime;
+        waitCount++;
+      }
+      if (passenger.dropoffTime !== undefined && passenger.pickupTime !== undefined) {
+        totalTravelTime += passenger.dropoffTime - passenger.pickupTime;
+        travelCount++;
+      }
+    }
     
     return {
-      avgWaitTime: avgWait,
-      avgTravelTime: avgTravel,
+      avgWaitTime: waitCount > 0 ? totalWaitTime / waitCount : 0,
+      avgTravelTime: travelCount > 0 ? totalTravelTime / travelCount : 0,
       passengersServed: completed.length,
-      totalPassengers: total,
+      totalPassengers,
     };
   }
 

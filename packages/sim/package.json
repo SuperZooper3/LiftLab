@@ -1,23 +1,43 @@
 {
   "name": "@lift-lab/sim",
   "version": "1.0.0",
-  "description": "LiftLab elevator simulation engine",
+  "description": "Advanced elevator simulation engine with deterministic behavior and pluggable algorithms",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "author": "LiftLab Contributors",
+  "license": "MIT",
+  "keywords": [
+    "elevator",
+    "simulation",
+    "algorithm",
+    "scheduling",
+    "typescript",
+    "deterministic"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SuperZooper3/LiftLab.git",
+    "directory": "packages/sim"
+  },
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
     "type-check": "tsc --noEmit",
     "cli": "node dist/cli.js",
     "test-sim": "npm run build && npm run cli test",
-    "simulate": "npm run build && npm run cli simulate"
+    "simulate": "npm run build && npm run cli simulate",
+    "clean": "rm -rf dist"
   },
   "devDependencies": {
     "typescript": "^5.0.0",
     "@types/node": "^20.0.0"
   },
   "files": [
-    "dist"
-  ]
+    "dist",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  }
 }

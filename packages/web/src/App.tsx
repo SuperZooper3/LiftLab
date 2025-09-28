@@ -1,9 +1,23 @@
+/**
+ * Main LiftLab Application Component
+ * 
+ * Provides the complete elevator simulation interface including:
+ * - Configuration controls for building parameters
+ * - Real-time simulation controls (start/pause/reset)
+ * - Live metrics dashboard
+ * - Interactive building visualization
+ * - Speed and spawn rate controls
+ */
+
+import React from 'react';
 import { useAppStore } from './store';
 import { BuildingCanvas } from './components/BuildingCanvas';
 import { useSimulationEngine } from './hooks/useSimulationEngine';
 import { SimulationStatus } from '@lift-lab/sim';
-import { useMemo } from 'react';
 
+/**
+ * Main application component
+ */
 function App() {
   const { 
     config, 

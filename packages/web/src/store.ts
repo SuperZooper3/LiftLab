@@ -1,42 +1,45 @@
+/**
+ * Global Application State Management
+ * 
+ * Manages UI state and configuration using Zustand for:
+ * - Simulation configuration (floors, elevators, spawn rate)
+ * - UI controls (speed, algorithm selection)
+ * - Live metrics display
+ * - Simulation status tracking
+ */
+
 import { create } from 'zustand';
 
-// Simulation configuration
+/**
+ * Configuration parameters for the simulation
+ */
 export interface SimulationConfig {
+  /** Number of floors in the building (3-60) */
   floors: number;
+  /** Number of elevators (1-8) */
   elevators: number;
-  spawnRate: number; // passengers per minute
+  /** Passenger spawn rate in passengers per minute */
+  spawnRate: number;
+  /** Random seed for deterministic behavior */
   seed: number;
 }
 
-// Simulation status
-export type SimulationStatus = 'idle' | 'running' | 'paused' | 'completed';
 
-// Global app state
+/**
+ * Global application state interface
+ */
 export interface AppState {
   // Configuration
   config: SimulationConfig;
   setConfig: (config: Partial<SimulationConfig>) => void;
   resetConfig: () => void;
 
-  // Simulation control
-  status: SimulationStatus;
-  setStatus: (status: SimulationStatus) => void;
   speed: number; // multiplier: 0.25x to 4x
   setSpeed: (speed: number) => void;
 
   // Selected algorithm
   selectedAlgorithm: string;
   setSelectedAlgorithm: (algorithm: string) => void;
-
-  // Metrics (live during simulation)
-  metrics: {
-    avgWaitTime: number;
-    avgTravelTime: number;
-    totalPassengers: number;
-    passengersServed: number;
-  };
-  updateMetrics: (metrics: Partial<AppState['metrics']>) => void;
-  resetMetrics: () => void;
 }
 
 // Default configuration
@@ -47,13 +50,6 @@ const DEFAULT_CONFIG: SimulationConfig = {
   seed: Date.now(),
 };
 
-// Default metrics
-const DEFAULT_METRICS = {
-  avgWaitTime: 0,
-  avgTravelTime: 0,
-  totalPassengers: 0,
-  passengersServed: 0,
-};
 
 // Create the store
 export const useAppStore = create<AppState>((set, get) => ({
@@ -65,21 +61,10 @@ export const useAppStore = create<AppState>((set, get) => ({
     })),
   resetConfig: () => set({ config: DEFAULT_CONFIG }),
 
-  // Simulation control
-  status: 'idle',
-  setStatus: (status) => set({ status }),
   speed: 1.0,
   setSpeed: (speed) => set({ speed: Math.max(0.25, Math.min(4.0, speed)) }),
 
   // Algorithm selection
   selectedAlgorithm: 'greedy',
   setSelectedAlgorithm: (algorithm) => set({ selectedAlgorithm: algorithm }),
-
-  // Metrics
-  metrics: DEFAULT_METRICS,
-  updateMetrics: (newMetrics) =>
-    set((state) => ({
-      metrics: { ...state.metrics, ...newMetrics },
-    })),
-  resetMetrics: () => set({ metrics: DEFAULT_METRICS }),
 }));

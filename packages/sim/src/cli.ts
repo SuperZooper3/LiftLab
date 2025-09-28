@@ -1,7 +1,23 @@
 #!/usr/bin/env node
 /**
- * CLI Test Interface for LiftLab Simulation Engine
- * Simple command-line tool to verify the simulation system works
+ * LiftLab CLI - Command Line Interface for Simulation Testing
+ * 
+ * Provides command-line tools for testing and validating the elevator
+ * simulation engine without requiring a web browser. Useful for:
+ * - Algorithm development and testing
+ * - Performance benchmarking
+ * - Automated testing and CI/CD
+ * - Component validation
+ * 
+ * Usage:
+ *   npm run cli test      # Run basic component tests
+ *   npm run cli simulate  # Run full simulation
+ * 
+ * @example
+ * ```bash
+ * # Test with custom parameters
+ * node dist/cli.js test --floors=20 --elevators=4 --duration=60
+ * ```
  */
 
 import { 
@@ -18,7 +34,10 @@ import {
 } from './index.js';
 
 /**
- * Simple test simulation runner
+ * Test simulation runner for CLI validation
+ * 
+ * Provides a simplified simulation environment for testing
+ * core components without the full web interface.
  */
 class TestSimulation {
   private elevators: ElevatorCar[] = [];
@@ -185,18 +204,7 @@ class TestSimulation {
 
   private printStatus(): void {
     const stats = this.spawner.getStats();
-    const elevatorStates = this.elevators.map(e => e.getState());
-    
-    console.log(`\n⏱️  Time: ${Math.floor(this.currentTime)}s`);
-    console.log(`👥 Passengers: ${stats.totalSpawned} spawned, ${this.waitingPassengers.length} waiting, ${this.completedPassengers.length} completed`);
-    
-    console.log(`🎢 Elevators:`);
-    for (const state of elevatorStates) {
-      const status = state.direction === Direction.IDLE ? 'IDLE' : 
-                    state.direction === Direction.UP ? '↑' : '↓';
-      const doors = state.doorState === DoorState.OPEN ? '🔓' : '🔒';
-      console.log(`   ${state.id}: Floor ${state.currentFloor} ${status} ${doors} (${state.passengers.length}/${state.capacity} passengers)`);
-    }
+    console.log(`[${Math.floor(this.currentTime)}s] Spawned: ${stats.totalSpawned}, Waiting: ${this.waitingPassengers.length}, Completed: ${this.completedPassengers.length}`);
   }
 
   private printFinalReport(): void {
