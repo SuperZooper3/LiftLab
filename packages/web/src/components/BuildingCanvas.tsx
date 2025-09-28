@@ -5,7 +5,7 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { Stage, Layer, Rect, Text, Group } from 'react-konva';
 import Konva from 'konva';
-import { Elevator } from '@lift-lab/sim';
+import { Elevator, Passenger } from '@lift-lab/sim';
 
 interface BuildingCanvasProps {
   /** Number of floors in the building */
@@ -16,6 +16,9 @@ interface BuildingCanvasProps {
   
   /** Current elevator states (optional for animation) */
   elevatorStates?: Elevator[];
+  
+  /** Waiting passengers on each floor */
+  waitingPassengers?: Passenger[];
 }
 
 const FLOOR_HEIGHT = 50;
@@ -28,7 +31,8 @@ const FLOOR_LABEL_WIDTH = 80; // Space for floor labels on the left
 export function BuildingCanvas({ 
   floors, 
   elevators, 
-  elevatorStates
+  elevatorStates,
+  waitingPassengers = []
 }: BuildingCanvasProps) {
   const elevatorRefs = useRef<(Konva.Group | null)[]>([]);
   const prevElevatorStates = useRef<Elevator[]>([]);
@@ -274,12 +278,50 @@ export function BuildingCanvas({
                   align="center"
                   width={scaledElevatorWidth}
                 />
-              </Group>
-            );
-          })}
-          
-        </Layer>
-      </Stage>
+                      </Group>
+                    );
+                  })}
+                  
+                  {/* Render waiting passengers */}
+                  {waitingPassengers.map((passenger, index) => {
+                    const floorIndex = floors - passenger.startFloor - 1; // Convert to visual index
+                    const y = offsetY + floorIndex * scaledFloorHeight + scaledFloorHeight - 15; // Bottom of floor
+                    
+                    // Spread passengers across the floor width
+                    const passengersOnFloor = waitingPassengers.filter(p => p.startFloor === passenger.startFloor);
+                    const passengerIndex = passengersOnFloor.indexOf(passenger);
+                    const spacing = Math.min(20, (buildingWidth - 40) / Math.max(passengersOnFloor.length, 1));
+                    const x = offsetX + 20 + (passengerIndex * spacing);
+                    
+                    return (
+                      <Group key={`passenger-${passenger.id}`} x={x} y={y}>
+                        {/* Passenger dot */}
+                        <Rect
+                          x={-4}
+                          y={-4}
+                          width={8}
+                          height={8}
+                          fill="#d68d3e" // cream-600 (waiting passenger color)
+                          cornerRadius={4}
+                        />
+                        
+                        {/* Destination indicator */}
+                        <Text
+                          x={-8}
+                          y={-20}
+                          text={`→${passenger.destinationFloor}`}
+                          fontSize={10}
+                          fill="#804d25" // cream-900
+                          fontFamily="Arial, sans-serif"
+                          align="center"
+                          width={16}
+                        />
+                      </Group>
+                    );
+                  })}
+                  
+                </Layer>
+              </Stage>
     </div>
   );
 }

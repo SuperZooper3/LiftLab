@@ -188,6 +188,7 @@ function App() {
                           floors={config.floors} 
                           elevators={config.elevators}
                           elevatorStates={elevatorStates}
+                          waitingPassengers={waitingPassengers}
                         />
                 <div className="absolute bottom-2 right-2 text-xs text-sage-500 bg-cream-100/80 px-2 py-1 rounded">
                   Scroll to zoom • Drag to pan
