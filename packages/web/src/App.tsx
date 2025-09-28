@@ -1,4 +1,5 @@
 import { useAppStore } from './store';
+import { BuildingCanvas } from './components/BuildingCanvas';
 
 function App() {
   const { config, status, selectedAlgorithm } = useAppStore();
@@ -94,14 +95,13 @@ function App() {
           <div className="bg-cream-100/40 backdrop-blur-sm rounded-lg shadow-lg border border-cream-200 h-full">
             <div className="p-6 h-full">
               <h2 className="text-lg font-semibold mb-4 text-sage-800">Building Visualization</h2>
-              <div className="h-[calc(100%-3rem)] bg-gradient-to-b from-cream-50 to-cream-100 rounded-lg flex items-center justify-center border-2 border-dashed border-cream-300">
-                <div className="text-center text-sage-500">
-                  <div className="text-6xl mb-4">🏢</div>
-                  <div className="text-lg font-medium text-sage-600">Canvas renderer will be implemented here</div>
-                  <div className="text-sm mt-2 text-sage-500">
-                    {config.floors} floors • {config.elevators} elevators
-                  </div>
-                </div>
+              <div className="h-[calc(100%-3rem)]">
+                <BuildingCanvas 
+                  floors={config.floors} 
+                  elevators={config.elevators}
+                  width={800}
+                  height={500}
+                />
               </div>
             </div>
           </div>
