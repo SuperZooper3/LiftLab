@@ -1,0 +1,19 @@
+{
+  "name": "@lift-lab/sim",
+  "version": "1.0.0",
+  "description": "LiftLab elevator simulation engine",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "type-check": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "files": [
+    "dist"
+  ]
+}
