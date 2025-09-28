@@ -103,15 +103,9 @@ export class SimulationEngine {
     const oldConfig = { ...this.config };
     this.config = { ...this.config, ...newConfig };
     
-    console.log('🔧 Engine config updated:', { old: oldConfig, new: this.config });
-    
     // If spawn rate changed and we have a spawner, update it directly
     if (newConfig.spawnRate !== undefined && this.spawner) {
-      console.log('📊 Updating spawner rate from', oldConfig.spawnRate, 'to', newConfig.spawnRate, 'Status:', this.status);
-      console.log('📊 Spawner before update:', this.spawner.getStats());
       this.spawner.setSpawnRate(this.config.spawnRate);
-      console.log('📊 Spawner after update:', this.spawner.getStats());
-      console.log('✅ Spawner rate updated successfully - simulation should continue running');
     }
     
     // If floors or elevators changed, need to reset
@@ -160,7 +154,6 @@ export class SimulationEngine {
    * Initialize the simulation components
    */
   private initialize(): void {
-    console.log('🎢 Initializing simulation...', this.config);
 
     // Create elevators
     this.elevators = [];
@@ -194,10 +187,7 @@ export class SimulationEngine {
       this.step(deltaTime, totalTime);
     });
     
-    console.log('🎯 Ticker created with base rate:', baseTickRate);
-
     // Don't add test passengers - let the spawner handle all passenger generation
-    console.log('✅ Simulation initialized - spawner will generate passengers at rate:', this.config.spawnRate);
   }
 
   /**

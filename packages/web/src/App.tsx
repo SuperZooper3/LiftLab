@@ -134,7 +134,6 @@ function App() {
                   value={speed}
                   onChange={(e) => {
                     const newSpeed = parseFloat(e.target.value);
-                    console.log('🎛️ Speed slider changed:', newSpeed);
                     setSpeed(newSpeed);
                     simulation.setSpeed(newSpeed);
                   }}
@@ -159,7 +158,6 @@ function App() {
                   value={config.spawnRate}
                   onChange={(e) => {
                     const newRate = parseFloat(e.target.value);
-                    console.log('📊 Spawn rate slider changed:', newRate);
                     setConfig({ spawnRate: newRate });
                   }}
                   disabled={false}
