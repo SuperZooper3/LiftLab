@@ -239,7 +239,7 @@ export class SimulationEngine {
     // Create ticker with default speed - use IntervalTicker for better speed control
     const baseTickRate = 10;
     this.ticker = createTicker(baseTickRate, false); // Use IntervalTicker instead of PrecisionTicker
-    this.ticker.onTick((deltaTime, totalTime) => {
+    this.ticker.onTick((deltaTime: number, totalTime: number) => {
       this.step(deltaTime, totalTime);
     });
     
@@ -282,7 +282,7 @@ export class SimulationEngine {
       elevator.step(deltaTime, totalTime);
       
       // Execute commands for this elevator
-      const elevatorCommands = commands.filter(c => c.elevatorId === elevator.getState().id);
+      const elevatorCommands = commands.filter((c: any) => c.elevatorId === elevator.getState().id);
       for (const command of elevatorCommands) {
         elevator.executeCommand(command, totalTime);
       }
@@ -292,7 +292,7 @@ export class SimulationEngine {
       
       // Remove boarded passengers from waiting list
       if (boarded.length > 0) {
-        const boardedIds = new Set(boarded.map(p => p.id));
+        const boardedIds = new Set(boarded.map((p: Passenger) => p.id));
         this.waitingPassengers = this.waitingPassengers.filter(p => !boardedIds.has(p.id));
       }
       

@@ -298,7 +298,7 @@ export function BuildingCanvas({
                         />
                         
                         {/* Passengers inside elevator */}
-                        {passengers.map((passenger, pIndex) => {
+                        {passengers.map((passenger: Passenger, pIndex: number) => {
                           // Better positioning: 4 passengers per row, centered in elevator
                           const passengersPerRow = 4;
                           const passengerSize = 12;

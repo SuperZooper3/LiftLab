@@ -11,7 +11,11 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
-    "composite": true
+    "composite": true,
+    "baseUrl": ".",
+    "paths": {
+      "@lift-lab/sim": ["../sim/src/index.ts"]
+    }
   },
   "include": ["src"],
   "references": [

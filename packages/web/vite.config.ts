@@ -1,11 +1,17 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import path from 'path';
 
 export default defineConfig({
   plugins: [react()],
   // Set base path for GitHub Pages deployment
   // Change 'LiftLab' to your actual repository name
   base: process.env.NODE_ENV === 'production' ? '/LiftLab/' : '/',
+  resolve: {
+    alias: {
+      '@lift-lab/sim': path.resolve(__dirname, '../sim/src/index.ts')
+    }
+  },
   server: {
     port: 5173,
     open: true,
@@ -20,8 +26,7 @@ export default defineConfig({
         // Split chunks for better caching
         manualChunks: {
           vendor: ['react', 'react-dom', 'zustand'],
-          konva: ['konva', 'react-konva'],
-          simulation: ['@lift-lab/sim']
+          konva: ['konva', 'react-konva']
         }
       }
     }
