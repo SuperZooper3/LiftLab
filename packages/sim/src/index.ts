@@ -1,10 +1,19 @@
 // LiftLab Simulation Engine
-// This will be the main export for the simulation package
+// Main export for the simulation package
 
-// Export placeholder for now - will be populated in Milestone 2
 export const version = '1.0.0';
 
-// TODO: Export domain models, algorithms, and simulation engine
-// export * from './models';
-// export * from './algorithms';
-// export * from './simulation';
+// Core domain models and types
+export * from './models.js';
+
+// Random number generation utilities
+export * from './rng.js';
+
+// Simulation timing and tick management
+export * from './tick.js';
+
+// Elevator state machine and behavior
+export * from './elevator.js';
+
+// Passenger spawning and management
+export * from './spawner.js';
