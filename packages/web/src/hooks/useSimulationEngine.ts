@@ -44,10 +44,15 @@ export function useSimulationEngine(config: SimulationConfig) {
   // Update config when it changes
   useEffect(() => {
     if (engineRef.current) {
+      console.log('🔄 Config change detected in hook:', {
+        floors: config.floors,
+        elevators: config.elevators,
+        spawnRate: config.spawnRate
+      });
       engineRef.current.updateConfig(config);
       setState(engineRef.current.getState());
     }
-  }, [config.floors, config.elevators, config.spawnRate]);
+  }, [config]);
 
   // Return simple interface
   return {

@@ -124,7 +124,15 @@ class PrecisionTicker implements Ticker {
     if (ticksPerSecond <= 0) {
       throw new Error('Tick rate must be positive');
     }
+    
+    const wasRunning = this.isRunning();
     this.intervalMs = 1000 / ticksPerSecond;
+    
+    // If currently running, restart the ticker to apply new rate immediately
+    if (wasRunning) {
+      this.cancelScheduledTick();
+      this.scheduleNextTick();
+    }
   }
 
   getTotalTime(): number {

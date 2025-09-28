@@ -43,7 +43,7 @@ export interface AppState {
 const DEFAULT_CONFIG: SimulationConfig = {
   floors: 10,
   elevators: 3,
-  spawnRate: 2.0, // 2 passengers per minute
+  spawnRate: 5.0, // 5 passengers per minute (middle of new range)
   seed: Date.now(),
 };
 

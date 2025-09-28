@@ -19,6 +19,7 @@ export interface SimulationConfig {
   floors: number;
   elevators: number;
   spawnRate: number;
+  seed: number;
 }
 
 export interface SimulationState {
@@ -99,9 +100,25 @@ export class SimulationEngine {
    * Update configuration
    */
   updateConfig(newConfig: Partial<SimulationConfig>): void {
+    const oldConfig = { ...this.config };
     this.config = { ...this.config, ...newConfig };
-    if (this.status !== SimulationStatus.IDLE) {
-      this.reset(); // Reset if simulation is running
+    
+    console.log('🔧 Engine config updated:', { old: oldConfig, new: this.config });
+    
+    // If spawn rate changed and we have a spawner, update it directly
+    if (newConfig.spawnRate !== undefined && this.spawner) {
+      console.log('📊 Updating spawner rate from', oldConfig.spawnRate, 'to', newConfig.spawnRate);
+      console.log('📊 Spawner before update:', this.spawner.getStats());
+      this.spawner.setSpawnRate(this.config.spawnRate);
+      console.log('📊 Spawner after update:', this.spawner.getStats());
+      console.log('✅ Spawner rate updated successfully');
+    }
+    
+    // If floors or elevators changed, need to reset
+    if (newConfig.floors !== undefined || newConfig.elevators !== undefined) {
+      if (this.status !== SimulationStatus.IDLE) {
+        this.reset(); // Reset if simulation is running
+      }
     }
   }
 
@@ -111,7 +128,16 @@ export class SimulationEngine {
   setSpeed(multiplier: number): void {
     const baseTickRate = 10;
     const adjustedTickRate = baseTickRate * multiplier;
+    console.log('⚡ Setting speed:', { 
+      multiplier, 
+      baseTickRate, 
+      adjustedTickRate, 
+      hasTicker: !!this.ticker,
+      isRunning: this.ticker?.isRunning(),
+      currentRate: this.ticker?.getTickRate()
+    });
     this.ticker?.setTickRate(adjustedTickRate);
+    console.log('✅ Speed updated, new rate:', this.ticker?.getTickRate());
   }
 
   /**
@@ -138,9 +164,9 @@ export class SimulationEngine {
       const elevatorConfig: ElevatorConfig = {
         id: `elevator_${i}`,
         capacity: 8,
-        floorTravelTime: 2.0,
-        doorOperationTime: 1.0,
-        doorHoldTime: 3.0,
+        floorTravelTime: 1.5, // Clean timing
+        doorOperationTime: 1.5, // Door operation time  
+        doorHoldTime: 2.0, // Door hold time
         floorCount: this.config.floors,
       };
       const elevator = new ElevatorCar(elevatorConfig, 0);
@@ -148,7 +174,7 @@ export class SimulationEngine {
     }
 
     // Create passenger spawner
-    const rng = createSeededRNG(Date.now());
+    const rng = createSeededRNG(this.config.seed);
     this.spawner = new PassengerSpawner({
       floorCount: this.config.floors,
       spawnRate: this.config.spawnRate,
@@ -157,17 +183,17 @@ export class SimulationEngine {
       maxWaitingPerFloor: 15,
     });
 
-    // Create ticker
+    // Create ticker with default speed
     const baseTickRate = 10;
     this.ticker = createTicker(baseTickRate);
     this.ticker.onTick((deltaTime, totalTime) => {
       this.step(deltaTime, totalTime);
     });
+    
+    console.log('🎯 Ticker created with base rate:', baseTickRate);
 
-    // Add some test passengers for immediate testing
-    this.addTestPassengers();
-
-    console.log('✅ Simulation initialized');
+    // Don't add test passengers - let the spawner handle all passenger generation
+    console.log('✅ Simulation initialized - spawner will generate passengers at rate:', this.config.spawnRate);
   }
 
   /**
@@ -210,6 +236,9 @@ export class SimulationEngine {
     this.waitingPassengers.forEach(p => waitingCounts[p.startFloor]++);
     
     const newPassengers = this.spawner.nextTick(deltaTime, totalTime, waitingCounts);
+    if (newPassengers.length > 0) {
+      console.log(`👥 Spawned ${newPassengers.length} passengers at rate ${this.config.spawnRate}/min`);
+    }
     this.waitingPassengers.push(...newPassengers);
 
     // Get elevator states

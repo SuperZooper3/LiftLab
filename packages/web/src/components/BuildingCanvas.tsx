@@ -50,7 +50,6 @@ export function BuildingCanvas({
   waitingPassengers = []
 }: BuildingCanvasProps) {
   const elevatorRefs = useRef<(Konva.Group | null)[]>([]);
-  const prevElevatorStates = useRef<Elevator[]>([]);
   const stageRef = useRef<Konva.Stage>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   
@@ -134,34 +133,7 @@ export function BuildingCanvas({
     });
   };
 
-  // Animation effect for elevator movement
-  useEffect(() => {
-    if (!elevatorStates) return;
-
-    elevatorStates.forEach((currentState, index) => {
-      const elevatorGroup = elevatorRefs.current[index];
-      const prevState = prevElevatorStates.current[index];
-      
-      if (elevatorGroup && prevState && currentState.currentFloor !== prevState.currentFloor) {
-        // Calculate new Y position
-        const newY = offsetY + (floors - currentState.currentFloor - 1) * scaledFloorHeight + 
-                     (scaledFloorHeight - scaledElevatorHeight) / 2;
-        
-        // Animate to new position
-        const tween = new Konva.Tween({
-          node: elevatorGroup,
-          duration: 0.8, // 800ms animation
-          y: newY,
-          easing: Konva.Easings.EaseInOut,
-        });
-        
-        tween.play();
-      }
-    });
-
-    // Update previous states
-    prevElevatorStates.current = elevatorStates ? [...elevatorStates] : [];
-  }, [elevatorStates, floors, offsetY, scaledFloorHeight, scaledElevatorHeight]);
+  // No animations - instant positioning for clean timing
 
   return (
     <div 
@@ -244,22 +216,34 @@ export function BuildingCanvas({
                     const direction = elevatorState?.direction ?? 'idle';
                     const elevatorColor = getElevatorColor(elevatorIndex);
                     
-                    // Calculate Y position (floor 0 is at bottom)
+                    // Calculate Y position (floor 0 is at bottom) - instant positioning
                     const elevatorY = offsetY + (floors - currentFloor - 1) * scaledFloorHeight + 
                                      (scaledFloorHeight - scaledElevatorHeight) / 2;
                     
                     const elevatorX = shaftX + (scaledShaftWidth - scaledElevatorWidth) / 2;
                     
-                    // Generate state text
+                    // Generate more detailed state text
                     let stateText = '';
                     if (isDoorsOpen) {
-                      stateText = 'Doors Open';
+                      if (passengers.length > 0) {
+                        stateText = 'Unloading';
+                      } else {
+                        stateText = 'Loading';
+                      }
                     } else if (direction === 'up') {
                       stateText = 'Going Up';
                     } else if (direction === 'down') {
                       stateText = 'Going Down';
                     } else {
-                      stateText = 'Idle';
+                      // Check if there are passengers waiting on this floor
+                      const waitingOnFloor = waitingPassengers?.filter(p => p.startFloor === currentFloor).length || 0;
+                      if (waitingOnFloor > 0 && passengers.length < 8) {
+                        stateText = 'Opening...';
+                      } else if (passengers.length > 0) {
+                        stateText = 'Planning';
+                      } else {
+                        stateText = 'Idle';
+                      }
                     }
                     
                     return (
@@ -306,34 +290,45 @@ export function BuildingCanvas({
                         
                         {/* Passengers inside elevator */}
                         {passengers.map((passenger, pIndex) => {
-                          const passengerX = 20 + (pIndex % 4) * 18; // 4 passengers per row
-                          const passengerY = 18 + Math.floor(pIndex / 4) * 18; // Stack rows
+                          // Better positioning: 4 passengers per row, centered in elevator
+                          const passengersPerRow = 4;
+                          const passengerSize = 12;
+                          const spacing = 16;
+                          const row = Math.floor(pIndex / passengersPerRow);
+                          const col = pIndex % passengersPerRow;
+                          
+                          // Center the passengers in the elevator
+                          const startX = (scaledElevatorWidth - (passengersPerRow - 1) * spacing) / 2;
+                          const startY = 20; // Start below the elevator ID
+                          
+                          const passengerX = startX + col * spacing;
+                          const passengerY = startY + row * spacing;
                           
                           return (
                             <Group key={`elevator-passenger-${passenger.id}`} x={passengerX} y={passengerY}>
                               {/* Passenger circle */}
                               <Rect
-                                x={-6}
-                                y={-6}
-                                width={12}
-                                height={12}
+                                x={-passengerSize/2}
+                                y={-passengerSize/2}
+                                width={passengerSize}
+                                height={passengerSize}
                                 fill="#5f7f5f" // Darker green for traveling passengers
-                                cornerRadius={6}
+                                cornerRadius={passengerSize/2}
                                 stroke="#4a654a"
                                 strokeWidth={1}
                               />
                               
                               {/* Destination number */}
                               <Text
-                                x={-6}
-                                y={-3}
+                                x={-passengerSize/2}
+                                y={-4}
                                 text={passenger.destinationFloor.toString()}
                                 fontSize={8}
                                 fill="white"
                                 fontFamily="Arial, sans-serif"
                                 fontStyle="bold"
                                 align="center"
-                                width={12}
+                                width={passengerSize}
                               />
                             </Group>
                           );

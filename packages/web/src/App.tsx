@@ -13,11 +13,7 @@ function App() {
   } = useAppStore();
   
   // Use the clean simulation engine
-  const simulation = useSimulationEngine({
-    floors: config.floors,
-    elevators: config.elevators,
-    spawnRate: 5.0 // Reduced spawn rate
-  });
+  const simulation = useSimulationEngine(config);
 
   return (
     <div className="min-h-screen bg-cream-50">
@@ -137,6 +133,7 @@ function App() {
                   value={speed}
                   onChange={(e) => {
                     const newSpeed = parseFloat(e.target.value);
+                    console.log('🎛️ Speed slider changed:', newSpeed);
                     setSpeed(newSpeed);
                     simulation.setSpeed(newSpeed);
                   }}
@@ -146,6 +143,31 @@ function App() {
                   <span>0.25×</span>
                   <span>1×</span>
                   <span>4×</span>
+                </div>
+              </div>
+
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-sage-700 mb-2">
+                  Spawn Rate: {config.spawnRate.toFixed(1)}/min
+                </label>
+                <input
+                  type="range"
+                  min="0.5"
+                  max="50"
+                  step="0.5"
+                  value={config.spawnRate}
+                  onChange={(e) => {
+                    const newRate = parseFloat(e.target.value);
+                    console.log('📊 Spawn rate slider changed:', newRate);
+                    setConfig({ spawnRate: newRate });
+                  }}
+                  disabled={false}
+                  className="w-full h-2 bg-cream-200 rounded-lg appearance-none cursor-pointer slider"
+                />
+                <div className="flex justify-between text-xs text-sage-500 mt-1">
+                  <span>0.5/min</span>
+                  <span>25/min</span>
+                  <span>50/min</span>
                 </div>
               </div>
             </div>
