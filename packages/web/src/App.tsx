@@ -16,7 +16,7 @@ function App() {
   const simulation = useSimulationEngine({
     floors: config.floors,
     elevators: config.elevators,
-    spawnRate: 30.0 // High rate for testing
+    spawnRate: 5.0 // Reduced spawn rate
   });
 
   return (
@@ -178,6 +178,12 @@ function App() {
                       <div>
                         <div className="text-sm text-sage-600">Waiting Now</div>
                         <div className="text-xl font-semibold text-sage-800">{simulation.waitingPassengers.length}</div>
+                      </div>
+                      <div>
+                        <div className="text-sm text-sage-600">In Elevators</div>
+                        <div className="text-xl font-semibold text-sage-800">
+                          {simulation.elevators.reduce((total, elevator) => total + elevator.passengers.length, 0)}
+                        </div>
                       </div>
                     </div>
           </div>

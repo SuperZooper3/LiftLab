@@ -21,12 +21,27 @@ interface BuildingCanvasProps {
   waitingPassengers?: Passenger[];
 }
 
-const FLOOR_HEIGHT = 50;
-const SHAFT_WIDTH = 120; // Increased spacing between shafts
-const ELEVATOR_WIDTH = 85;
-const ELEVATOR_HEIGHT = 40;
+const FLOOR_HEIGHT = 60; // Increased for better spacing
+const SHAFT_WIDTH = 120; // Spacing between shafts
+const ELEVATOR_WIDTH = 100; // Bigger elevator cars
+const ELEVATOR_HEIGHT = 50; // Bigger elevator cars
 const MARGIN = 40;
 const FLOOR_LABEL_WIDTH = 80; // Space for floor labels on the left
+const PASSENGER_AREA_WIDTH = 100; // Space to the right of shafts for passengers
+
+// Pastel colors for elevators (cycles after 5)
+const ELEVATOR_COLORS = [
+  '#FFB3BA', // Light pink
+  '#BAFFC9', // Light green  
+  '#BAE1FF', // Light blue
+  '#FFFFBA', // Light yellow
+  '#FFDFBA', // Light peach
+];
+
+// Function to get elevator color
+const getElevatorColor = (elevatorIndex: number): string => {
+  return ELEVATOR_COLORS[elevatorIndex % ELEVATOR_COLORS.length];
+};
 
 export function BuildingCanvas({ 
   floors, 
@@ -217,104 +232,153 @@ export function BuildingCanvas({
             );
           })}
           
-          {/* Render elevator cars */}
-          {Array.from({ length: elevators }).map((_, elevatorIndex) => {
-            const shaftX = offsetX + elevatorIndex * scaledShaftWidth;
-            
-            // Use elevator state if provided, otherwise default to floor 0
-            const elevatorState = elevatorStates?.[elevatorIndex];
-            const currentFloor = elevatorState?.currentFloor ?? 0;
-            const passengerCount = elevatorState?.passengers?.length ?? 0;
-            const isDoorsOpen = elevatorState?.doorState === 'open';
-            
-            // Calculate Y position (floor 0 is at bottom)
-            const elevatorY = offsetY + (floors - currentFloor - 1) * scaledFloorHeight + 
-                             (scaledFloorHeight - scaledElevatorHeight) / 2;
-            
-            const elevatorX = shaftX + (scaledShaftWidth - scaledElevatorWidth) / 2;
-            
-            return (
-              <Group
-                key={`elevator-${elevatorIndex}`}
-                x={elevatorX}
-                y={elevatorY}
-                ref={(node) => {
-                  elevatorRefs.current[elevatorIndex] = node;
-                }}
-              >
-                {/* Elevator car */}
-                <Rect
-                  x={0}
-                  y={0}
-                  width={scaledElevatorWidth}
-                  height={scaledElevatorHeight}
-                  fill={isDoorsOpen ? "#7d9a7d" : "#a688bd"} // sage-400 if doors open, lavender-500 if closed
-                  stroke="#8d6ba3" // lavender-600
-                  strokeWidth={2}
-                  cornerRadius={4}
-                />
-                
-                {/* Elevator ID */}
-                <Text
-                  x={0}
-                  y={scaledElevatorHeight / 2 - 8}
-                  text={`E${elevatorIndex + 1}`}
-                  fontSize={14}
-                  fill="white"
-                  fontFamily="Arial, sans-serif"
-                  fontStyle="bold"
-                  align="center"
-                  width={scaledElevatorWidth}
-                />
-                
-                {/* Passenger count */}
-                <Text
-                  x={0}
-                  y={scaledElevatorHeight / 2 + 4}
-                  text={`${passengerCount}/8`}
-                  fontSize={12}
-                  fill="white"
-                  fontFamily="Arial, sans-serif"
-                  align="center"
-                  width={scaledElevatorWidth}
-                />
+                  {/* Render elevator cars */}
+                  {Array.from({ length: elevators }).map((_, elevatorIndex) => {
+                    const shaftX = offsetX + elevatorIndex * scaledShaftWidth;
+                    
+                    // Use elevator state if provided, otherwise default to floor 0
+                    const elevatorState = elevatorStates?.[elevatorIndex];
+                    const currentFloor = elevatorState?.currentFloor ?? 0;
+                    const passengers = elevatorState?.passengers ?? [];
+                    const isDoorsOpen = elevatorState?.doorState === 'open';
+                    const direction = elevatorState?.direction ?? 'idle';
+                    const elevatorColor = getElevatorColor(elevatorIndex);
+                    
+                    // Calculate Y position (floor 0 is at bottom)
+                    const elevatorY = offsetY + (floors - currentFloor - 1) * scaledFloorHeight + 
+                                     (scaledFloorHeight - scaledElevatorHeight) / 2;
+                    
+                    const elevatorX = shaftX + (scaledShaftWidth - scaledElevatorWidth) / 2;
+                    
+                    // Generate state text
+                    let stateText = '';
+                    if (isDoorsOpen) {
+                      stateText = 'Doors Open';
+                    } else if (direction === 'up') {
+                      stateText = 'Going Up';
+                    } else if (direction === 'down') {
+                      stateText = 'Going Down';
+                    } else {
+                      stateText = 'Idle';
+                    }
+                    
+                    return (
+                      <Group
+                        key={`elevator-${elevatorIndex}`}
+                        x={elevatorX}
+                        y={elevatorY}
+                        ref={(node) => {
+                          elevatorRefs.current[elevatorIndex] = node;
+                        }}
+                      >
+                        {/* Elevator car */}
+                        <Rect
+                          x={0}
+                          y={0}
+                          width={scaledElevatorWidth}
+                          height={scaledElevatorHeight}
+                          fill={elevatorColor}
+                          stroke={isDoorsOpen ? "#7d9a7d" : "#666"} // Green border if doors open
+                          strokeWidth={2}
+                          cornerRadius={6}
+                        />
+                        
+                        {/* Elevator ID */}
+                        <Text
+                          x={5}
+                          y={5}
+                          text={`E${elevatorIndex + 1}`}
+                          fontSize={12}
+                          fill="#333"
+                          fontFamily="Arial, sans-serif"
+                          fontStyle="bold"
+                        />
+                        
+                        {/* State text */}
+                        <Text
+                          x={5}
+                          y={scaledElevatorHeight - 15}
+                          text={stateText}
+                          fontSize={10}
+                          fill="#333"
+                          fontFamily="Arial, sans-serif"
+                        />
+                        
+                        {/* Passengers inside elevator */}
+                        {passengers.map((passenger, pIndex) => {
+                          const passengerX = 20 + (pIndex % 4) * 18; // 4 passengers per row
+                          const passengerY = 18 + Math.floor(pIndex / 4) * 18; // Stack rows
+                          
+                          return (
+                            <Group key={`elevator-passenger-${passenger.id}`} x={passengerX} y={passengerY}>
+                              {/* Passenger circle */}
+                              <Rect
+                                x={-6}
+                                y={-6}
+                                width={12}
+                                height={12}
+                                fill="#5f7f5f" // Darker green for traveling passengers
+                                cornerRadius={6}
+                                stroke="#4a654a"
+                                strokeWidth={1}
+                              />
+                              
+                              {/* Destination number */}
+                              <Text
+                                x={-6}
+                                y={-3}
+                                text={passenger.destinationFloor.toString()}
+                                fontSize={8}
+                                fill="white"
+                                fontFamily="Arial, sans-serif"
+                                fontStyle="bold"
+                                align="center"
+                                width={12}
+                              />
+                            </Group>
+                          );
+                        })}
                       </Group>
                     );
                   })}
                   
-                  {/* Render waiting passengers */}
+                  {/* Render waiting passengers to the right of shafts */}
                   {waitingPassengers.map((passenger, index) => {
                     const floorIndex = floors - passenger.startFloor - 1; // Convert to visual index
-                    const y = offsetY + floorIndex * scaledFloorHeight + scaledFloorHeight - 15; // Bottom of floor
+                    const y = offsetY + floorIndex * scaledFloorHeight + scaledFloorHeight / 2; // Center of floor
                     
-                    // Spread passengers across the floor width
+                    // Position passengers to the right of all shafts
                     const passengersOnFloor = waitingPassengers.filter(p => p.startFloor === passenger.startFloor);
                     const passengerIndex = passengersOnFloor.indexOf(passenger);
-                    const spacing = Math.min(20, (buildingWidth - 40) / Math.max(passengersOnFloor.length, 1));
-                    const x = offsetX + 20 + (passengerIndex * spacing);
+                    const spacing = 25; // Fixed spacing between passengers
+                    const passengerAreaStart = offsetX + buildingWidth + 20; // Start after all shafts
+                    const x = passengerAreaStart + (passengerIndex * spacing);
                     
                     return (
                       <Group key={`passenger-${passenger.id}`} x={x} y={y}>
-                        {/* Passenger dot */}
+                        {/* Passenger circle */}
                         <Rect
-                          x={-4}
-                          y={-4}
-                          width={8}
-                          height={8}
-                          fill="#d68d3e" // cream-600 (waiting passenger color)
-                          cornerRadius={4}
+                          x={-10}
+                          y={-10}
+                          width={20}
+                          height={20}
+                          fill="#d68d3e" // Orange circle
+                          cornerRadius={10} // Make it a circle
+                          stroke="#b8722e" // Darker orange border
+                          strokeWidth={1}
                         />
                         
-                        {/* Destination indicator */}
+                        {/* Destination number */}
                         <Text
-                          x={-8}
-                          y={-20}
-                          text={`→${passenger.destinationFloor}`}
-                          fontSize={10}
-                          fill="#804d25" // cream-900
+                          x={-10}
+                          y={-6}
+                          text={passenger.destinationFloor.toString()}
+                          fontSize={12}
+                          fill="white"
                           fontFamily="Arial, sans-serif"
+                          fontStyle="bold"
                           align="center"
-                          width={16}
+                          width={20}
                         />
                       </Group>
                     );
