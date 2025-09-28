@@ -35,7 +35,10 @@ A **frontend-focused, full-stack-feel elevator simulator** designed as a learnin
 
 #### 2.3 Visualization
 
-* Minimalist “Mini Metro style”: rectangles for elevators, dots for passengers.
+* Minimalist "Mini Metro style": rectangles for elevators, dots for passengers.
+* **Beige/pastel color palette** for a warm, approachable aesthetic.
+* **Building visualization takes center stage** - occupies majority of screen real estate.
+* Controls and metrics positioned on the left sidebar to support the main visualization.
 * Animations represent elevator movement and door states in real-time or scaled time.
 * No need for photorealism; focus on clarity and responsiveness.
 * Playback controls: **pause/resume, speed-up/slow-down** (nice-to-have extras).
