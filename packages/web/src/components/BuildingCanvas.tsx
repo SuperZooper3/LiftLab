@@ -2,7 +2,7 @@
  * BuildingCanvas - Konva-based elevator visualization
  */
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { Stage, Layer, Rect, Text, Group } from 'react-konva';
 import Konva from 'konva';
 import { Elevator } from '@lift-lab/sim';
@@ -37,23 +37,65 @@ export function BuildingCanvas({
 }: BuildingCanvasProps) {
   const elevatorRefs = useRef<(Konva.Group | null)[]>([]);
   const prevElevatorStates = useRef<Elevator[]>([]);
-  // Calculate dimensions
+  const stageRef = useRef<Konva.Stage>(null);
+  
+  // Pan and zoom state
+  const [stagePos, setStagePos] = useState({ x: 0, y: 0 });
+  const [stageScale, setStageScale] = useState(1);
+  // Calculate dimensions (use full size, no auto-scaling)
   const buildingHeight = floors * FLOOR_HEIGHT;
   const buildingWidth = elevators * SHAFT_WIDTH;
   
-  // Scale to fit canvas
-  const scaleX = Math.min(1, (width - MARGIN * 2) / buildingWidth);
-  const scaleY = Math.min(1, (height - MARGIN * 2) / buildingHeight);
-  const scale = Math.min(scaleX, scaleY);
+  // Use full-size dimensions
+  const scaledFloorHeight = FLOOR_HEIGHT;
+  const scaledShaftWidth = SHAFT_WIDTH;
+  const scaledElevatorWidth = ELEVATOR_WIDTH;
+  const scaledElevatorHeight = ELEVATOR_HEIGHT;
   
-  const scaledFloorHeight = FLOOR_HEIGHT * scale;
-  const scaledShaftWidth = SHAFT_WIDTH * scale;
-  const scaledElevatorWidth = ELEVATOR_WIDTH * scale;
-  const scaledElevatorHeight = ELEVATOR_HEIGHT * scale;
+  // Start building at margin offset
+  const offsetX = MARGIN;
+  const offsetY = MARGIN;
+
+  // Pan and zoom handlers
+  const handleWheel = (e: Konva.KonvaEventObject<WheelEvent>) => {
+    e.evt.preventDefault();
+    
+    const stage = e.target.getStage();
+    if (!stage) return;
+    
+    const oldScale = stage.scaleX();
+    const pointer = stage.getPointerPosition();
+    if (!pointer) return;
+    
+    // Zoom sensitivity
+    const scaleBy = 1.1;
+    const newScale = e.evt.deltaY > 0 ? oldScale / scaleBy : oldScale * scaleBy;
+    
+    // Constrain zoom levels
+    const clampedScale = Math.max(0.3, Math.min(3, newScale));
+    
+    setStageScale(clampedScale);
+    
+    // Calculate new position to zoom towards mouse
+    const mousePointTo = {
+      x: (pointer.x - stage.x()) / oldScale,
+      y: (pointer.y - stage.y()) / oldScale,
+    };
+    
+    const newPos = {
+      x: pointer.x - mousePointTo.x * clampedScale,
+      y: pointer.y - mousePointTo.y * clampedScale,
+    };
+    
+    setStagePos(newPos);
+  };
   
-  // Center the building
-  const offsetX = (width - buildingWidth * scale) / 2;
-  const offsetY = (height - buildingHeight * scale) / 2;
+  const handleDragEnd = (e: Konva.KonvaEventObject<DragEvent>) => {
+    setStagePos({
+      x: e.target.x(),
+      y: e.target.y(),
+    });
+  };
 
   // Animation effect for elevator movement
   useEffect(() => {
@@ -85,8 +127,19 @@ export function BuildingCanvas({
   }, [elevatorStates, floors, offsetY, scaledFloorHeight, scaledElevatorHeight]);
 
   return (
-    <div className="w-full h-full bg-gradient-to-b from-cream-50 to-cream-100 rounded-lg border border-cream-200">
-      <Stage width={width} height={height}>
+    <div className="w-full h-full bg-gradient-to-b from-cream-50 to-cream-100 rounded-lg border border-cream-200 overflow-hidden">
+      <Stage
+        width={width}
+        height={height}
+        scaleX={stageScale}
+        scaleY={stageScale}
+        x={stagePos.x}
+        y={stagePos.y}
+        draggable
+        onWheel={handleWheel}
+        onDragEnd={handleDragEnd}
+        ref={stageRef}
+      >
         <Layer>
           {/* Render elevator shafts */}
           {Array.from({ length: elevators }).map((_, elevatorIndex) => {
@@ -99,7 +152,7 @@ export function BuildingCanvas({
                   x={shaftX}
                   y={offsetY}
                   width={scaledShaftWidth}
-                  height={buildingHeight * scale}
+                  height={buildingHeight}
                   fill="#f5dab0" // cream-300 from our palette
                   stroke="#efc485" // cream-400
                   strokeWidth={2}
@@ -126,7 +179,7 @@ export function BuildingCanvas({
                       x={shaftX + 5}
                       y={offsetY + floorIndex * scaledFloorHeight + scaledFloorHeight / 2 - 8}
                       text={floorNumber.toString()}
-                      fontSize={12 * scale}
+                      fontSize={14}
                       fill="#804d25" // cream-900
                       fontFamily="Arial"
                     />
@@ -178,7 +231,7 @@ export function BuildingCanvas({
                   x={0}
                   y={scaledElevatorHeight / 2 - 8}
                   text={`E${elevatorIndex + 1}`}
-                  fontSize={12 * scale}
+                  fontSize={14}
                   fill="white"
                   fontFamily="Arial, sans-serif"
                   fontStyle="bold"
@@ -191,7 +244,7 @@ export function BuildingCanvas({
                   x={0}
                   y={scaledElevatorHeight / 2 + 4}
                   text={`${passengerCount}/8`}
-                  fontSize={10 * scale}
+                  fontSize={12}
                   fill="white"
                   fontFamily="Arial, sans-serif"
                   align="center"

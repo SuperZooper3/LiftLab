@@ -100,13 +100,16 @@ function App() {
                   {config.floors} Floors • {config.elevators} Elevators
                 </span>
               </div>
-              <div className="h-[calc(100%-3rem)]">
+              <div className="h-[calc(100%-3rem)] relative">
                 <BuildingCanvas 
                   floors={config.floors} 
                   elevators={config.elevators}
                   width={800}
                   height={500}
                 />
+                <div className="absolute bottom-2 right-2 text-xs text-sage-500 bg-cream-100/80 px-2 py-1 rounded">
+                  Scroll to zoom • Drag to pan
+                </div>
               </div>
             </div>
           </div>
