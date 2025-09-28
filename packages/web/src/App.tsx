@@ -104,8 +104,6 @@ function App() {
                 <BuildingCanvas 
                   floors={config.floors} 
                   elevators={config.elevators}
-                  width={800}
-                  height={500}
                 />
                 <div className="absolute bottom-2 right-2 text-xs text-sage-500 bg-cream-100/80 px-2 py-1 rounded">
                   Scroll to zoom • Drag to pan

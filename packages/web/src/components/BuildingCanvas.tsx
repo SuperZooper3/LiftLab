@@ -2,7 +2,7 @@
  * BuildingCanvas - Konva-based elevator visualization
  */
 
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { Stage, Layer, Rect, Text, Group } from 'react-konva';
 import Konva from 'konva';
 import { Elevator } from '@lift-lab/sim';
@@ -16,10 +16,6 @@ interface BuildingCanvasProps {
   
   /** Current elevator states (optional for animation) */
   elevatorStates?: Elevator[];
-  
-  /** Canvas dimensions */
-  width?: number;
-  height?: number;
 }
 
 const FLOOR_HEIGHT = 50;
@@ -31,17 +27,17 @@ const MARGIN = 40;
 export function BuildingCanvas({ 
   floors, 
   elevators, 
-  elevatorStates,
-  width = 800, 
-  height = 600 
+  elevatorStates
 }: BuildingCanvasProps) {
   const elevatorRefs = useRef<(Konva.Group | null)[]>([]);
   const prevElevatorStates = useRef<Elevator[]>([]);
   const stageRef = useRef<Konva.Stage>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   
   // Pan and zoom state
   const [stagePos, setStagePos] = useState({ x: 0, y: 0 });
   const [stageScale, setStageScale] = useState(1);
+  const [dimensions, setDimensions] = useState({ width: 800, height: 500 });
   // Calculate dimensions (use full size, no auto-scaling)
   const buildingHeight = floors * FLOOR_HEIGHT;
   const buildingWidth = elevators * SHAFT_WIDTH;
@@ -55,6 +51,27 @@ export function BuildingCanvas({
   // Start building at margin offset
   const offsetX = MARGIN;
   const offsetY = MARGIN;
+
+  // Resize observer to track container dimensions
+  const updateDimensions = useCallback(() => {
+    if (containerRef.current) {
+      const { clientWidth, clientHeight } = containerRef.current;
+      setDimensions({ width: clientWidth, height: clientHeight });
+    }
+  }, []);
+
+  useEffect(() => {
+    updateDimensions();
+    
+    const resizeObserver = new ResizeObserver(updateDimensions);
+    if (containerRef.current) {
+      resizeObserver.observe(containerRef.current);
+    }
+    
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [updateDimensions]);
 
   // Pan and zoom handlers
   const handleWheel = (e: Konva.KonvaEventObject<WheelEvent>) => {
@@ -127,10 +144,13 @@ export function BuildingCanvas({
   }, [elevatorStates, floors, offsetY, scaledFloorHeight, scaledElevatorHeight]);
 
   return (
-    <div className="w-full h-full bg-gradient-to-b from-cream-50 to-cream-100 rounded-lg border border-cream-200 overflow-hidden">
+    <div 
+      ref={containerRef}
+      className="w-full h-full bg-gradient-to-b from-cream-50 to-cream-100 rounded-lg border border-cream-200 overflow-hidden"
+    >
       <Stage
-        width={width}
-        height={height}
+        width={dimensions.width}
+        height={dimensions.height}
         scaleX={stageScale}
         scaleY={stageScale}
         x={stagePos.x}
