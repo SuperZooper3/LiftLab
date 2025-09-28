@@ -7,11 +7,6 @@ export default defineConfig({
   // Set base path for GitHub Pages deployment
   // Change 'LiftLab' to your actual repository name
   base: process.env.NODE_ENV === 'production' ? '/LiftLab/' : '/',
-  resolve: {
-    alias: {
-      '@lift-lab/sim': path.resolve(__dirname, '../sim/src/index.ts')
-    }
-  },
   server: {
     port: 5173,
     open: true,

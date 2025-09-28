@@ -40,8 +40,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build packages
-        run: NODE_ENV=production npm run build
+      - name: Build web application
+        run: NODE_ENV=production npm run build --workspace=@lift-lab/web
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

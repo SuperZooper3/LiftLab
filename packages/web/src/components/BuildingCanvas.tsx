@@ -22,7 +22,7 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { Stage, Layer, Rect, Text, Group } from 'react-konva';
 import Konva from 'konva';
-import { Elevator, Passenger, Direction } from '@lift-lab/sim';
+import { Elevator, Passenger, Direction } from '../../../sim/src/models';
 
 /**
  * Props for the BuildingCanvas component

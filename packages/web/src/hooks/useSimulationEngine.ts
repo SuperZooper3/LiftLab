@@ -28,7 +28,7 @@
 
 import { useRef, useState, useEffect } from 'react';
 import { SimulationEngine, SimulationConfig, SimulationState } from '../engine/SimulationEngine';
-import { SimulationStatus } from '@lift-lab/sim';
+import { SimulationStatus } from '../../../sim/src/models';
 
 /**
  * Hook for integrating SimulationEngine with React components

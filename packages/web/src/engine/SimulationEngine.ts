@@ -30,7 +30,7 @@ import {
   Elevator,
   Passenger,
   SimulationStatus
-} from '@lift-lab/sim';
+} from '../../../sim/src/index';
 
 /**
  * Configuration parameters for the simulation

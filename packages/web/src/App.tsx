@@ -13,7 +13,7 @@ import React from 'react';
 import { useAppStore } from './store';
 import { BuildingCanvas } from './components/BuildingCanvas';
 import { useSimulationEngine } from './hooks/useSimulationEngine';
-import { SimulationStatus } from '@lift-lab/sim';
+import { SimulationStatus } from '../../sim/src/models';
 
 /**
  * Main application component

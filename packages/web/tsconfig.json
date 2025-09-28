@@ -12,13 +12,6 @@
     "noEmit": true,
     "jsx": "react-jsx",
     "composite": true,
-    "baseUrl": ".",
-    "paths": {
-      "@lift-lab/sim": ["../sim/src/index.ts"]
-    }
   },
-  "include": ["src"],
-  "references": [
-    { "path": "../sim" }
-  ]
+  "include": ["src", "../sim/src"]
 }
