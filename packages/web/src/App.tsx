@@ -94,7 +94,12 @@ function App() {
         <div className="flex-1 p-6">
           <div className="bg-cream-100/40 backdrop-blur-sm rounded-lg shadow-lg border border-cream-200 h-full">
             <div className="p-6 h-full">
-              <h2 className="text-lg font-semibold mb-4 text-sage-800">Building Visualization</h2>
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-lg font-semibold text-sage-800">Building Visualization</h2>
+                <span className="text-sm text-sage-600 font-medium">
+                  {config.floors} Floors • {config.elevators} Elevators
+                </span>
+              </div>
               <div className="h-[calc(100%-3rem)]">
                 <BuildingCanvas 
                   floors={config.floors} 

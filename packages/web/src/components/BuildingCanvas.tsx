@@ -22,11 +22,11 @@ interface BuildingCanvasProps {
   height?: number;
 }
 
-const FLOOR_HEIGHT = 60;
-const SHAFT_WIDTH = 80;
-const ELEVATOR_WIDTH = 70;
-const ELEVATOR_HEIGHT = 50;
-const MARGIN = 20;
+const FLOOR_HEIGHT = 50;
+const SHAFT_WIDTH = 100;
+const ELEVATOR_WIDTH = 85;
+const ELEVATOR_HEIGHT = 40;
+const MARGIN = 40;
 
 export function BuildingCanvas({ 
   floors, 
@@ -175,24 +175,25 @@ export function BuildingCanvas({
                 
                 {/* Elevator ID */}
                 <Text
-                  x={scaledElevatorWidth / 2}
-                  y={scaledElevatorHeight / 2 - 10}
+                  x={0}
+                  y={scaledElevatorHeight / 2 - 8}
                   text={`E${elevatorIndex + 1}`}
-                  fontSize={10 * scale}
+                  fontSize={12 * scale}
                   fill="white"
-                  fontFamily="Arial"
+                  fontFamily="Arial, sans-serif"
+                  fontStyle="bold"
                   align="center"
                   width={scaledElevatorWidth}
                 />
                 
                 {/* Passenger count */}
                 <Text
-                  x={scaledElevatorWidth / 2}
-                  y={scaledElevatorHeight / 2 + 2}
+                  x={0}
+                  y={scaledElevatorHeight / 2 + 4}
                   text={`${passengerCount}/8`}
-                  fontSize={8 * scale}
+                  fontSize={10 * scale}
                   fill="white"
-                  fontFamily="Arial"
+                  fontFamily="Arial, sans-serif"
                   align="center"
                   width={scaledElevatorWidth}
                 />
@@ -200,17 +201,6 @@ export function BuildingCanvas({
             );
           })}
           
-          {/* Building title */}
-          <Text
-            x={width / 2}
-            y={20}
-            text={`${floors} Floors • ${elevators} Elevators`}
-            fontSize={16}
-            fill="#804d25" // cream-900
-            fontFamily="Arial"
-            align="center"
-            width={width}
-          />
         </Layer>
       </Stage>
     </div>
