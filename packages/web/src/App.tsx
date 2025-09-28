@@ -2,7 +2,15 @@ import { useAppStore } from './store';
 import { BuildingCanvas } from './components/BuildingCanvas';
 
 function App() {
-  const { config, status, selectedAlgorithm } = useAppStore();
+  const { 
+    config, 
+    status, 
+    selectedAlgorithm, 
+    speed,
+    setConfig, 
+    setStatus, 
+    setSpeed 
+  } = useAppStore();
 
   return (
     <div className="min-h-screen bg-cream-50">
@@ -31,41 +39,103 @@ function App() {
             
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-sage-700 mb-1">
-                  Floors
+                <label className="block text-sm font-medium text-sage-700 mb-2">
+                  Floors (3-60)
                 </label>
-                <div className="text-sm text-sage-600">{config.floors}</div>
+                <input
+                  type="number"
+                  min="3"
+                  max="60"
+                  value={config.floors}
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value);
+                    if (value >= 3 && value <= 60) {
+                      setConfig({ floors: value });
+                    }
+                  }}
+                  disabled={status === 'running'}
+                  className="w-full px-3 py-2 border border-cream-300 rounded-md text-sage-800 bg-white focus:outline-none focus:ring-2 focus:ring-sage-400 disabled:bg-cream-100 disabled:opacity-50"
+                />
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-sage-700 mb-1">
-                  Elevators
+                <label className="block text-sm font-medium text-sage-700 mb-2">
+                  Elevators (1-8)
                 </label>
-                <div className="text-sm text-sage-600">{config.elevators}</div>
+                <input
+                  type="number"
+                  min="1"
+                  max="8"
+                  value={config.elevators}
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value);
+                    if (value >= 1 && value <= 8) {
+                      setConfig({ elevators: value });
+                    }
+                  }}
+                  disabled={status === 'running'}
+                  className="w-full px-3 py-2 border border-cream-300 rounded-md text-sage-800 bg-white focus:outline-none focus:ring-2 focus:ring-sage-400 disabled:bg-cream-100 disabled:opacity-50"
+                />
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-sage-700 mb-1">
+                <label className="block text-sm font-medium text-sage-700 mb-2">
                   Algorithm
                 </label>
-                <div className="text-sm text-sage-600 capitalize">{selectedAlgorithm}</div>
+                <select
+                  value={selectedAlgorithm}
+                  disabled={status === 'running'}
+                  className="w-full px-3 py-2 border border-cream-300 rounded-md text-sage-800 bg-white focus:outline-none focus:ring-2 focus:ring-sage-400 disabled:bg-cream-100 disabled:opacity-50"
+                >
+                  <option value="greedy">Greedy</option>
+                </select>
               </div>
             </div>
 
             <div className="mt-6 pt-4 border-t border-cream-300">
-              <h3 className="text-sm font-medium text-sage-700 mb-2">Controls</h3>
-              <div className="space-y-2">
+              <h3 className="text-sm font-medium text-sage-700 mb-3">Playback Controls</h3>
+              <div className="space-y-3">
                 <button 
+                  onClick={() => {
+                    if (status === 'idle') {
+                      setStatus('running');
+                    } else if (status === 'running') {
+                      setStatus('paused');
+                    } else if (status === 'paused') {
+                      setStatus('running');
+                    }
+                  }}
                   className="w-full px-4 py-2 bg-sage-500 text-white rounded-md hover:bg-sage-600 disabled:opacity-50 transition-colors"
-                  disabled={status === 'running'}
                 >
-                  Start Simulation
+                  {status === 'idle' ? 'Start Simulation' : 
+                   status === 'running' ? 'Pause' : 'Resume'}
                 </button>
                 <button 
+                  onClick={() => setStatus('idle')}
                   className="w-full px-4 py-2 bg-lavender-500 text-white rounded-md hover:bg-lavender-600 transition-colors"
                 >
                   Reset
                 </button>
+              </div>
+              
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-sage-700 mb-2">
+                  Speed: {speed}×
+                </label>
+                <input
+                  type="range"
+                  min="0.25"
+                  max="4"
+                  step="0.25"
+                  value={speed}
+                  onChange={(e) => setSpeed(parseFloat(e.target.value))}
+                  className="w-full h-2 bg-cream-200 rounded-lg appearance-none cursor-pointer slider"
+                />
+                <div className="flex justify-between text-xs text-sage-500 mt-1">
+                  <span>0.25×</span>
+                  <span>1×</span>
+                  <span>4×</span>
+                </div>
               </div>
             </div>
           </div>

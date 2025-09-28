@@ -44,4 +44,33 @@
   .metrics-overlay {
     @apply bg-cream-100/90 backdrop-blur-sm rounded-lg p-4 shadow-lg border border-cream-200;
   }
+
+  /* Custom range slider styling */
+  .slider::-webkit-slider-thumb {
+    appearance: none;
+    height: 20px;
+    width: 20px;
+    border-radius: 50%;
+    background: #7d9a7d; /* sage-400 */
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+
+  .slider::-webkit-slider-thumb:hover {
+    background: #5f7f5f; /* sage-500 */
+  }
+
+  .slider::-moz-range-thumb {
+    height: 20px;
+    width: 20px;
+    border-radius: 50%;
+    background: #7d9a7d;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+
+  .slider::-moz-range-thumb:hover {
+    background: #5f7f5f;
+  }
 }
