@@ -107,19 +107,23 @@ export class SimulationEngine {
     
     // If spawn rate changed and we have a spawner, update it directly
     if (newConfig.spawnRate !== undefined && this.spawner) {
-      console.log('📊 Updating spawner rate from', oldConfig.spawnRate, 'to', newConfig.spawnRate);
+      console.log('📊 Updating spawner rate from', oldConfig.spawnRate, 'to', newConfig.spawnRate, 'Status:', this.status);
       console.log('📊 Spawner before update:', this.spawner.getStats());
       this.spawner.setSpawnRate(this.config.spawnRate);
       console.log('📊 Spawner after update:', this.spawner.getStats());
-      console.log('✅ Spawner rate updated successfully');
+      console.log('✅ Spawner rate updated successfully - simulation should continue running');
     }
     
     // If floors or elevators changed, need to reset
     if (newConfig.floors !== undefined || newConfig.elevators !== undefined) {
       if (this.status !== SimulationStatus.IDLE) {
+        console.log('🔄 Resetting simulation due to floors/elevators change');
         this.reset(); // Reset if simulation is running
       }
     }
+    
+    // Don't call notifyStateChange here - it should be handled by the simulation loop
+    // or specific methods that change state
   }
 
   /**
@@ -179,13 +183,13 @@ export class SimulationEngine {
       floorCount: this.config.floors,
       spawnRate: this.config.spawnRate,
       rng,
-      minSpawnInterval: 0.1,
+      minSpawnInterval: 0.05, // Faster minimum interval for more responsive spawning
       maxWaitingPerFloor: 15,
     });
 
-    // Create ticker with default speed
+    // Create ticker with default speed - use IntervalTicker for better speed control
     const baseTickRate = 10;
-    this.ticker = createTicker(baseTickRate);
+    this.ticker = createTicker(baseTickRate, false); // Use IntervalTicker instead of PrecisionTicker
     this.ticker.onTick((deltaTime, totalTime) => {
       this.step(deltaTime, totalTime);
     });
@@ -237,9 +241,14 @@ export class SimulationEngine {
     
     const newPassengers = this.spawner.nextTick(deltaTime, totalTime, waitingCounts);
     if (newPassengers.length > 0) {
-      console.log(`👥 Spawned ${newPassengers.length} passengers at rate ${this.config.spawnRate}/min`);
+      console.log(`👥 Spawned ${newPassengers.length} passengers at rate ${this.config.spawnRate}/min (deltaTime: ${deltaTime.toFixed(3)}s)`);
     }
     this.waitingPassengers.push(...newPassengers);
+    
+    // Debug spawn rate every few seconds
+    if (Math.floor(totalTime) % 5 === 0 && Math.floor(totalTime) !== Math.floor(totalTime - deltaTime)) {
+      console.log(`📊 Spawn rate check: ${this.config.spawnRate}/min, waiting: ${this.waitingPassengers.length}, spawner stats:`, this.spawner.getStats());
+    }
 
     // Get elevator states
     const elevatorStates = this.elevators.map(e => e.getState());

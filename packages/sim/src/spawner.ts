@@ -137,11 +137,17 @@ export class PassengerSpawner {
     const passengers: Passenger[] = [];
 
     // Determine number of passengers to spawn using Poisson distribution
+    const deltaTimeMinutes = deltaTime / 60; // Convert to minutes
     const spawnCount = RandomUtils.poissonSpawn(
       this.config.rng,
       this.config.spawnRate,
-      deltaTime / 60 // Convert to minutes
+      deltaTimeMinutes
     );
+    
+    // Debug spawning calculation
+    if (spawnCount > 0 || Math.random() < 0.01) { // Log occasionally even when no spawn
+      console.log(`🎲 Spawn calc: rate=${this.config.spawnRate}/min, deltaTime=${deltaTime.toFixed(3)}s (${deltaTimeMinutes.toFixed(4)}min), spawnCount=${spawnCount}`);
+    }
 
     for (let i = 0; i < spawnCount; i++) {
       const passenger = this.spawnSinglePassenger(currentTime, existingWaitingCounts);

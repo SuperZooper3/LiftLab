@@ -201,6 +201,9 @@ export class ElevatorCar {
     
     // Only board if doors are open and we have capacity
     if (this.state.doorState !== DoorState.OPEN || isElevatorFull(this.getState())) {
+      if (this.state.doorState === DoorState.OPEN && isElevatorFull(this.getState())) {
+        console.log(`🚫 Elevator ${this.config.id} full: ${this.state.passengers.length}/${this.config.capacity}`);
+      }
       return boarded;
     }
 
@@ -217,6 +220,8 @@ export class ElevatorCar {
         
         // Add their destination as a dropoff request
         this.addDropoffRequest(passenger.destinationFloor);
+        
+        console.log(`🚶‍♂️ Passenger boarded elevator ${this.config.id}: ${this.state.passengers.length}/${this.config.capacity}`);
       }
     }
 
