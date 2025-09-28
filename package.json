@@ -10,6 +10,8 @@
   "scripts": {
     "dev": "npm run dev --workspace=@lift-lab/web",
     "build": "npm run build --workspace=@lift-lab/sim && npm run build --workspace=@lift-lab/web",
+    "build:prod": "NODE_ENV=production npm run build",
+    "preview": "npm run preview --workspace=@lift-lab/web",
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
     "format": "prettier --write .",
     "type-check": "npm run type-check --workspace=@lift-lab/sim && npm run type-check --workspace=@lift-lab/web",
