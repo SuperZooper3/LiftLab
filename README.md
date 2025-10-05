@@ -2,11 +2,6 @@
 
 > **An advanced elevator simulation engine and algorithm testing platform**
 
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
-[![React](https://img.shields.io/badge/React-18.2+-61DAFB.svg)](https://reactjs.org/)
-[![Vite](https://img.shields.io/badge/Vite-4.4+-646CFF.svg)](https://vitejs.dev/)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-
 LiftLab is a sophisticated elevator simulation platform designed for algorithm development, performance analysis, and educational purposes. It provides a realistic simulation environment where you can implement, test, and benchmark custom elevator control algorithms.
 
 ## 🎯 **Features**
