@@ -112,6 +112,43 @@ label {
   font-size: 0.82rem;
 }
 
+.top-bar-actions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  min-width: 0;
+}
+
+.github-link {
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 260px;
+  padding: 0 12px;
+  border: 1px solid rgba(148, 163, 184, 0.42);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #f8fafc;
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.github-link:hover {
+  border-color: rgba(94, 234, 212, 0.72);
+  background: rgba(15, 118, 110, 0.38);
+}
+
+.github-link span {
+  overflow: hidden;
+  color: #cbd5e1;
+  font-weight: 700;
+  text-overflow: ellipsis;
+}
+
 .status-pill {
   display: inline-flex;
   align-items: center;
@@ -1011,6 +1048,14 @@ label {
     min-height: 64px;
     align-items: flex-start;
     padding: 12px;
+  }
+
+  .top-bar-actions {
+    flex-wrap: wrap;
+  }
+
+  .github-link span {
+    display: none;
   }
 
   .workspace {

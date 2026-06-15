@@ -21,6 +21,7 @@ const SPEED_DIAL_STEPS = 160;
 const DEFAULT_PLAYBACK_SPEED = 1;
 const RUN_LOG_KEY = 'liftlab.runLog.v1';
 const SETTINGS_KEY = 'liftlab.settings.v1';
+const GITHUB_URL = 'https://github.com/SuperZooper3/LiftLab';
 
 interface SavedRun {
   id: string;
@@ -165,7 +166,19 @@ export default function App() {
           <h1>LiftLab</h1>
           <p>{selectedProfile.name} / {selectedAlgorithm.name}</p>
         </div>
-        <div className={`status-pill ${liveRun.status}`}>{liveRun.status}</div>
+        <div className="top-bar-actions">
+          <a
+            className="github-link"
+            href={GITHUB_URL}
+            rel="noreferrer"
+            target="_blank"
+            aria-label="Open LiftLab on GitHub to clone the project and add algorithms"
+          >
+            <strong>GitHub</strong>
+            <span>Clone + add algorithms</span>
+          </a>
+          <div className={`status-pill ${liveRun.status}`}>{liveRun.status}</div>
+        </div>
       </header>
 
       <main className="workspace">
