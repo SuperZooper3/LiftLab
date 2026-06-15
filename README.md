@@ -4,6 +4,8 @@ LiftLab is a deterministic elevator simulation workbench for testing dispatch al
 project is organized around runs: every live simulation, fast-forward, and benchmark is a run with
 the same config, engine, profiles, algorithm API, metrics, and history samples.
 
+![LiftLab simulator dashboard](docs/assets/liftlab-simulator.png)
+
 ## What Changed
 
 - Rebuilt the old canvas-driven prototype as a pure headless simulator plus a React console.
